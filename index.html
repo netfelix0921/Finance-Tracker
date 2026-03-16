@@ -27,6 +27,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap');
 
 /* ── DESIGN TOKENS ───────────────────────────────────────────── */
 :root {
@@ -412,7 +413,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
 .search-mob-btn { display: none; width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--bg); border: 1px solid var(--border); cursor: pointer; align-items: center; justify-content: center; flex-shrink: 0; transition: all var(--dur-fast); }
 .search-mob-btn svg { width: 15px; height: 15px; stroke: var(--t2); fill: none; stroke-width: 1.75; stroke-linecap: round; }
 .search-mob-btn:hover { background: var(--surface); }
-.search-mob-bar { display: none; padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border); position: relative; }
+.search-mob-bar { display: none; padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border); position: relative; z-index: 101; }
 .search-mob-bar .search-input { background: var(--bg); font-size: 13px; padding: 8px 12px 8px 32px; }
 .search-mob-bar svg { position: absolute; left: 24px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; stroke: var(--t3); fill: none; stroke-width: 2; stroke-linecap: round; pointer-events: none; }
 .search-mob-bar .search-results { left: 14px; right: 14px; }
@@ -1241,6 +1242,7 @@ select option { background: var(--surface); }
   .search-wrap { display: none; }
   .search-mob-btn { display: flex; }
   .search-mob-bar.show { display: block; }
+  .search-mob-bar.open { display: block; }
   .krow { grid-template-columns: 1fr 1fr; }
   .content { padding: 18px 16px; }
 }
@@ -1445,7 +1447,10 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
    ═══════════════════════════════════════════════════════════════ */
 .bottom-nav {
   display: none; /* hidden on desktop */
-  position: sticky; bottom: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   width: 100%;
   background: rgba(255,255,255,0.96);
   backdrop-filter: blur(16px);
@@ -1553,7 +1558,8 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 /* On mobile: show bottom nav, hide sidebar, remove topbar ham */
 @media (max-width: 900px) {
   .bottom-nav { display: flex; flex-direction: column; }
-  .content { padding-bottom: 8px !important; }
+  /* Extra bottom padding so content clears the fixed bottom nav */
+  .content { padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important; }
 }
 
 /* Dark mode */
@@ -1901,6 +1907,7 @@ html[data-theme="dark"] .nw-hero {
 }
 
 
+
 /* ── INSIGHT CARDS ───────────────────────────────────── */
 .icard { border-radius: 18px !important; padding: 20px 22px !important; }
 .insight-row { gap: 12px !important; margin-bottom: 16px !important; }
@@ -2148,93 +2155,477 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(255,255,255
   animation: panelFadeIn 200ms cubic-bezier(0,0,0.2,1) both !important;
 }
 
-/* ════════════════════════════════════════════
-   SIDEBAR HIDDEN FIX + iPHONE 13 MINI (375px)
-   ════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════
+   FELIX PREMIUM VISUAL SKIN
+   Pure visual overrides — no layout or pointer changes
+   ════════════════════════════════════════════════════════ */
+
+
+/* ── SIDEBAR PREMIUM ────────────────────────────────────────── */
+.sidebar {
+  width: 244px !important;
+}
 @media (max-width: 900px) {
   .sidebar { left: -260px !important; width: 244px !important; }
   .sidebar.open { left: 0 !important; }
 }
+
+/* ── HERO CARD ────────────────────────────────────────────────── */
+.nw-hero {
+  background: linear-gradient(135deg,#0f1f5c 0%,#1a3a8a 30%,#2563EB 65%,#7C3AED 100%) !important;
+  border-radius: 22px !important;
+  padding: 28px 30px !important;
+  box-shadow: 0 12px 40px rgba(37,99,235,0.28),0 4px 16px rgba(124,58,237,0.18) !important;
+}
+.nw-val { font-size: 40px !important; letter-spacing:-2px !important; }
+.nw-hero::before, .nw-hero::after { pointer-events: none !important; }
+
+/* ── KPI CARDS ─────────────────────────────────────────────────── */
+.krow { gap: 12px !important; }
+.kpi { border-radius: 18px !important; }
+
+/* ── ALL CARDS ─────────────────────────────────────────────────── */
+.card, .card-flat { border-radius: 18px !important; }
+.wid { border-radius: 18px !important; }
+
+/* ── INSIGHT CARDS ────────────────────────────────────────────── */
+.icard { border-radius: 18px !important; }
+
+/* ── WIDGET TITLE ─────────────────────────────────────────────── */
+.wtitle { font-size: 13.5px !important; font-weight: 600 !important; padding: 16px 20px 14px !important; }
+
+/* ── BILLS / ACTIVITY ITEMS ───────────────────────────────────── */
+.ri { padding: 10px 20px !important; }
+.dash-bills-item { padding: 10px 20px !important; }
+.top-exp-item { padding: 10px 20px !important; }
+
+/* ── MODALS ────────────────────────────────────────────────────── */
+.modal { border-radius: 22px !important; }
+
+/* ── MOBILE FIXES ─────────────────────────────────────────────── */
 @media (max-width: 390px) {
-  .topbar { padding-left: max(10px,env(safe-area-inset-left)) !important; padding-right: max(10px,env(safe-area-inset-right)) !important; gap: 4px !important; height: calc(52px + env(safe-area-inset-top)) !important; }
-  .topbar-left { gap: 6px !important; flex-shrink: 1 !important; }
-  .topbar-right { gap: 2px !important; flex-shrink: 0 !important; }
-  .topbar-title { font-size: 13px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 120px !important; }
+  .topbar { padding-left: max(10px,env(safe-area-inset-left)) !important; padding-right: max(10px,env(safe-area-inset-right)) !important; }
   .tb-chip { display: none !important; }
   .tb-btn, .ham-btn { width: 30px !important; height: 30px !important; }
   #av-topbar { width: 26px !important; height: 26px !important; font-size: 9px !important; }
-  .content { padding: 12px 12px !important; padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important; }
-  .greeting { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; margin-bottom: 14px !important; }
-  .g-name { font-size: 16px !important; }
-  .g-time { font-size: 9px !important; }
-  .g-pill { font-size: 9px !important; padding: 2px 6px !important; max-width: 130px !important; }
-  #dash-av { width: 34px !important; height: 34px !important; flex-shrink: 0 !important; }
-  .nw-hero { padding: 18px 16px !important; border-radius: 16px !important; margin-bottom: 12px !important; }
-  .nw-val { font-size: 28px !important; letter-spacing: -1.5px !important; }
-  .nw-lbl { font-size: 9px !important; }
-  .nw-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin-top: 14px !important; padding-top: 12px !important; }
-  .nw-item .nw-iv { font-size: 13px !important; }
-  .nw-item .nw-il { font-size: 8.5px !important; }
-  .krow { grid-template-columns: 1fr 1fr !important; gap: 8px !important; margin-bottom: 12px !important; }
-  .kpi { padding: 12px 12px 10px !important; border-radius: 14px !important; }
-  .kpi-icon { width: 26px !important; height: 26px !important; margin-bottom: 8px !important; }
-  .klbl { font-size: 8.5px !important; margin-bottom: 4px !important; }
-  .kval { font-size: 15px !important; letter-spacing: -0.5px !important; }
-  .ktag { font-size: 9px !important; }
-  .insight-row { grid-template-columns: 1fr !important; gap: 8px !important; margin-bottom: 12px !important; }
-  .icard { padding: 14px 16px !important; border-radius: 14px !important; }
-  .icard-value { font-size: 20px !important; }
-  .icard-label { font-size: 9px !important; }
+  .content { padding: 12px 12px !important; padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+  .nw-val { font-size: 26px !important; }
+  .krow { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .insight-row { grid-template-columns: 1fr !important; }
   .dash-row.c2, .dash-row.c3 { grid-template-columns: 1fr !important; }
-  .dash-row { gap: 8px !important; }
-  .card, .card-flat { border-radius: 14px !important; }
-  .wid { border-radius: 14px !important; }
-  .wtitle { padding: 12px 14px 10px !important; font-size: 12.5px !important; }
-  .ri { padding: 9px 14px !important; }
-  .rdesc { font-size: 12px !important; max-width: 160px !important; }
-  .ramt { font-size: 11.5px !important; }
-  .bill-card { padding: 8px 10px !important; border-radius: 12px !important; }
-  .bill-name { font-size: 12.5px !important; }
-  .bill-amt { font-size: 13px !important; }
-  .bill-pay-btn,.bill-edit-btn,.bill-del-btn { font-size: 10px !important; padding: 3px 7px !important; }
-  .sub-card { padding: 8px 10px !important; }
-  .sub-card-name { font-size: 12.5px !important; }
-  .ggrid { grid-template-columns: 1fr !important; gap: 8px !important; }
-  .gcard { padding: 14px 14px !important; border-radius: 14px !important; }
-  .alert-banner { padding: 10px 12px !important; font-size: 11px !important; border-radius: 12px !important; }
-  .mob-card { padding: 10px 12px !important; }
-  .mob-title { font-size: 12.5px !important; }
-  .mob-sub { font-size: 10px !important; }
-  .mob-amt { font-size: 13px !important; }
-  .mob-del,.mob-edit,.mob-pay,.mob-sub-pause,.mob-sub-skip,.mob-del-sub { font-size: 9.5px !important; padding: 3px 7px !important; }
-  .ph { margin-bottom: 12px !important; flex-wrap: wrap !important; }
-  .ph-t { font-size: 16px !important; }
-  .btn-add { font-size: 12px !important; padding: 7px 12px !important; }
   .fr3 { grid-template-columns: 1fr !important; }
   input, select, textarea { font-size: 16px !important; }
   .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
-  .modal { border-radius: 22px 22px 0 0 !important; max-height: 90vh !important; width: 100% !important; }
-  .modal-head { padding: 16px 16px 12px !important; }
-  #modal-body { padding: 14px 16px !important; }
-  .bn-item { min-width: 44px !important; padding: 4px 6px !important; }
-  .bn-ico svg { width: 20px !important; height: 20px !important; }
-  .bn-lbl { font-size: 9px !important; }
-  .bn-add { width: 40px !important; height: 40px !important; }
-  .bn-sheet { padding: 0 12px calc(16px + env(safe-area-inset-bottom)) !important; }
-  .bn-sheet-btn { padding: 12px 6px !important; border-radius: 12px !important; }
-  .bn-sheet-lbl { font-size: 10px !important; }
-  .nw-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
-  .nw-section { padding: 14px 14px !important; }
-  .nw-line { font-size: 11.5px !important; padding: 7px 0 !important; }
-  .prof-2col { grid-template-columns: 1fr !important; gap: 8px !important; }
-  .prof-field { flex-direction: column !important; align-items: flex-start !important; gap: 4px !important; }
-  .pn { font-size: 15px !important; }
+  .modal { border-radius: 22px 22px 0 0 !important; max-height: 90vh !important; }
 }
-@media (max-width: 320px) {
-  .kval { font-size: 13px !important; }
-  .nw-val { font-size: 22px !important; }
-  .nw-hero { padding: 14px 12px !important; }
-  .topbar-title { max-width: 80px !important; }
+
+/* ── DARK MODE TWEAKS ─────────────────────────────────────────── */
+html[data-theme="dark"] .nw-hero {
+  background: linear-gradient(135deg,#060A18 0%,#0D1D55 30%,#1D45C0 65%,#6D28D9 100%) !important;
+}
+
+
+@media (max-width: 900px) { #av-topbar { display: none !important; } }
+
+
+/* ══════════════════════════════════════════════════════════════
+   DASHBOARD v5 — EDITORIAL MINIMAL
+   Philosophy: lots of white space, strong type hierarchy,
+   2-column grid max, no visual clutter, Stripe-level restraint
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── CONTENT WRAPPER ──────────────────────────────────────────── */
+.content {
+  background: #F5F6FA;
+  padding: 24px 22px !important;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+}
+html[data-theme="dark"] .content { background: #0C0E17; }
+
+/* ── GREETING ─────────────────────────────────────────────────── */
+.db-greeting {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.db-time {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin: 0 0 4px;
+}
+.db-name {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  color: var(--t1);
+  margin: 0;
+  line-height: 1.1;
+}
+.db-name span { color: var(--blue); }
+.db-av-wrap .av-lg {
+  width: 42px !important;
+  height: 42px !important;
+  font-size: 16px !important;
+  cursor: pointer;
+  border: 2px solid rgba(37,99,235,0.15) !important;
+  box-shadow: 0 2px 10px rgba(37,99,235,0.15) !important;
+  flex-shrink: 0;
+}
+
+/* ── PILLS ────────────────────────────────────────────────────── */
+.db-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  min-height: 4px; /* keep space even if empty */
+}
+
+/* ── HERO CARD ────────────────────────────────────────────────── */
+.db-hero {
+  background: linear-gradient(135deg, #0a1628 0%, #0f2d6e 45%, #1a4fc4 80%, #2563EB 100%);
+  border-radius: 20px;
+  padding: 24px 24px 20px;
+  margin-bottom: 14px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(16,40,120,0.30), 0 2px 8px rgba(16,40,120,0.15);
+}
+.db-hero::after {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.db-hero-top {
+  margin-bottom: 6px;
+}
+.db-hero-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.db-hero-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 38px;
+  font-weight: 400;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+.db-hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+.db-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 16px;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  flex: 1;
+  min-width: 0;
+}
+.db-stat:first-child { padding-left: 0; }
+.db-stat:last-child { border-right: none; }
+.db-stat-div { display: none; } /* border-right handles this */
+.db-stat-l {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  opacity: 0.50;
+  white-space: nowrap;
+}
+.db-stat-v {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-stat-flow { color: #6ee7b7; }
+
+/* ── KPI ROW ──────────────────────────────────────────────────── */
+.krow {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 10px !important;
+  margin-bottom: 14px !important;
+}
+.kpi {
+  background: #fff;
+  border-radius: 16px !important;
+  padding: 16px 16px 13px !important;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.kpi:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); transform: translateY(-1px); }
+html[data-theme="dark"] .kpi { background: #141828; border-color: rgba(255,255,255,0.07); }
+.kpi-icon {
+  width: 32px !important; height: 32px !important;
+  border-radius: 10px !important;
+  margin-bottom: 10px !important;
+}
+.klbl {
+  font-size: 9.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--t3) !important;
+  margin-bottom: 4px !important;
+}
+.kval {
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.5px !important;
+}
+.ktag {
+  font-size: 10px !important;
+  margin-top: 4px !important;
+  color: var(--t3) !important;
+}
+.kbar { height: 2px !important; opacity: 0.35 !important; }
+
+/* ── CARD SHARED ──────────────────────────────────────────────── */
+.card {
+  background: #fff !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+html[data-theme="dark"] .card {
+  background: #141828 !important;
+  border-color: rgba(255,255,255,0.07) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.30) !important;
+}
+
+/* ── DB CARD HEADER ───────────────────────────────────────────── */
+.db-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 10px;
+}
+.db-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t1);
+  letter-spacing: -0.2px;
+}
+.db-card-link {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--blue);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  font-family: inherit;
+}
+.db-card-link:hover { opacity: 1; }
+.db-card-sub {
+  font-size: 11px;
+  color: var(--t3);
+}
+
+/* ── MID ROW: chart + health ──────────────────────────────────── */
+.db-mid-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.db-chart-card { overflow: hidden; }
+.db-health-card { overflow: hidden; padding: 0; }
+.db-health-score {
+  font-family: 'DM Mono', monospace;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--green);
+  letter-spacing: -0.5px;
+}
+.health-gauge {
+  height: 4px !important;
+  border-radius: 4px !important;
+  margin: 10px 18px 8px !important;
+  overflow: hidden;
+}
+.health-fill { border-radius: 4px !important; }
+.db-health-sub {
+  font-size: 11px;
+  color: var(--t3);
+  padding: 0 18px 10px;
+  line-height: 1.5;
+}
+.health-factors {
+  display: flex;
+  flex-direction: column;
+  gap: 5px !important;
+  padding: 0 18px 14px;
+}
+.hf-row { font-size: 11px !important; }
+.hf-name { color: var(--t3); font-size: 11px; }
+.hf-bar-wrap { width: 56px !important; height: 3px !important; }
+.hf-pts { font-size: 10.5px !important; }
+
+/* ── BOTTOM ROWS: bills/activity, expenses/pie ──────────────── */
+.db-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.db-list-card { overflow: hidden; }
+
+/* ── RECENT ACTIVITY ──────────────────────────────────────────── */
+.ri {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.1s;
+}
+.ri:last-child { border-bottom: none; }
+.ri:hover { background: rgba(0,0,0,0.02); }
+html[data-theme="dark"] .ri:hover { background: rgba(255,255,255,0.03); }
+.rdot {
+  width: 32px !important; height: 32px !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+}
+.rdesc { font-size: 12.5px !important; font-weight: 500 !important; }
+.rdate { font-size: 10.5px !important; color: var(--t3) !important; }
+.ramt { font-size: 12px !important; font-weight: 500 !important; }
+
+/* ── BILLS ────────────────────────────────────────────────────── */
+.dash-bills-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.1s;
+}
+.dash-bills-item:last-child { border-bottom: none; }
+.dash-bills-item:hover { background: rgba(0,0,0,0.02); }
+.dbi-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dbi-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--t1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dbi-due { font-size: 11px; color: var(--t3); flex-shrink: 0; }
+.dbi-amt { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--t1); flex-shrink: 0; }
+
+/* ── TOP EXPENSES ─────────────────────────────────────────────── */
+.top-exp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.1s;
+}
+.top-exp-item:last-child { border-bottom: none; }
+.top-exp-item:hover { background: rgba(0,0,0,0.02); }
+.top-exp-icon { width: 28px !important; height: 28px !important; border-radius: 8px !important; font-size: 13px !important; }
+
+/* ── EMPTY STATES ─────────────────────────────────────────────── */
+.db-empty {
+  padding: 20px 18px;
+  font-size: 12.5px;
+  color: var(--t3);
+  text-align: center;
+}
+
+/* ── CHART CANVAS ─────────────────────────────────────────────── */
+.chart-canvas { padding: 4px 12px 10px !important; }
+
+/* ── ALERT BANNERS ────────────────────────────────────────────── */
+.alert-banner {
+  border-radius: 12px !important;
+  margin-bottom: 12px;
+  font-size: 12px !important;
+}
+
+/* ── WIDGET TITLE (other panels still use .wtitle) ─────────────── */
+.wtitle {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 14px 18px 10px !important;
+  border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+}
+html[data-theme="dark"] .wtitle { border-bottom-color: rgba(255,255,255,0.07) !important; }
+
+/* ── INSIGHT ROW (other panels) ───────────────────────────────── */
+.insight-row { gap: 12px !important; }
+.icard { border-radius: 16px !important; padding: 16px 18px !important; }
+.icard-label { font-size: 10px !important; font-weight: 600 !important; letter-spacing: 0.06em !important; }
+.icard-value { font-size: 22px !important; font-weight: 500 !important; }
+
+/* ── DARK MODE ────────────────────────────────────────────────── */
+html[data-theme="dark"] .db-hero {
+  background: linear-gradient(135deg, #05090f 0%, #081530 45%, #0c2560 80%, #1545a8 100%);
+}
+html[data-theme="dark"] .ri:hover,
+html[data-theme="dark"] .dash-bills-item:hover,
+html[data-theme="dark"] .top-exp-item:hover { background: rgba(255,255,255,0.025); }
+html[data-theme="dark"] .ri { border-bottom-color: rgba(255,255,255,0.06); }
+html[data-theme="dark"] .dash-bills-item { border-bottom-color: rgba(255,255,255,0.06); }
+html[data-theme="dark"] .top-exp-item { border-bottom-color: rgba(255,255,255,0.06); }
+html[data-theme="dark"] .content { background: #0C0E17; }
+
+/* ── RESPONSIVE ────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .db-mid-row { grid-template-columns: 1fr !important; }
+  .db-bottom-row { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 600px) {
+  .krow { grid-template-columns: 1fr 1fr !important; }
+  .content { padding: 16px 14px !important; padding-bottom: calc(88px + env(safe-area-inset-bottom)) !important; }
+  .db-hero-val { font-size: 30px !important; }
+  .db-name { font-size: 22px !important; }
+}
+@media (max-width: 390px) {
+  .krow { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .kpi { padding: 12px 12px 10px !important; }
+  .klbl { font-size: 8.5px !important; }
+  .kval { font-size: 15px !important; }
+  .content { padding: 12px 12px !important; padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+  .db-hero { padding: 18px 16px 16px !important; }
+  .db-hero-val { font-size: 26px !important; }
+  .db-stat { padding: 0 10px !important; }
+  .db-stat-v { font-size: 12px !important; }
+  .db-mid-row { grid-template-columns: 1fr !important; }
+  .db-bottom-row { grid-template-columns: 1fr !important; }
+  .fr3 { grid-template-columns: 1fr !important; }
+  input, select, textarea { font-size: 16px !important; }
+  .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
+  .modal { border-radius: 22px 22px 0 0 !important; max-height: 90vh !important; }
+}
+
+/* ── FORECAST (hidden inside health card on mobile) ─────────────── */
+@media (max-width: 900px) {
+  .db-forecast-mini { display: block !important; }
 }
 
 </style>
@@ -2278,7 +2669,7 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(255,255,255
   </nav>
   <div class="sidebar-foot">
     <div class="pchip" id="profile-chip">
-      <div class="av" id="av-chip"><span id="av-initial">Y/span></div>
+      <div class="av" id="av-chip"><span id="av-initial">Y</span></div>
       <div><div class="pname" id="chip-name">You/div><div class="prole">Profile &amp; Settings</div></div>
     </div>
   </div>
@@ -2308,7 +2699,7 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(255,255,255
         <svg id="theme-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
       </button>
       <!-- Mobile profile avatar -->
-      <div class="av" id="av-topbar" title="Profile & Settings" style="cursor:pointer;flex-shrink:0"><span id="av-topbar-initial">Y/span></div>
+      <div class="av" id="av-topbar" title="Profile & Settings" style="cursor:pointer;flex-shrink:0"><span id="av-topbar-initial">Y</span></div>
     </div>
   </div>
   <!-- Mobile search bar (shown when search icon tapped) -->
@@ -2320,58 +2711,127 @@ html[data-theme="dark"] ::-webkit-scrollbar-thumb { background: rgba(255,255,255
 
   <div class="content">
 
-    <!-- DASHBOARD -->
+    <!-- ══════════════════════════════════════════
+         DASHBOARD v5 — Editorial Minimal Redesign
+         ══════════════════════════════════════════ -->
     <div id="panel-dashboard" class="panel active">
-      <div class="greeting">
-        <div style="display:flex;align-items:center;gap:14px">
-          <div class="av-lg" id="dash-av" onclick="goPanel('profile')" title="Profile & Settings" style="cursor:pointer;width:52px;height:52px;font-size:18px;border:2px solid rgba(59,107,255,0.15);box-shadow:0 2px 10px rgba(59,107,255,0.20);flex-shrink:0"><span id="dash-av-initial">Y/span></div>
-          <div class="greeting-left">
-            <div class="g-time" id="gtime">Good morning</div>
-            <div class="g-name">Hey, <span id="gname-span">there.</span></div>
-            <div class="g-insights" id="g-insights"></div>
+
+      <!-- GREETING -->
+      <div class="db-greeting">
+        <div class="db-greeting-left">
+          <p class="db-time" id="gtime">Good morning</p>
+          <h1 class="db-name">Hey, <span id="gname-span">Felix.</span></h1>
+        </div>
+        <div class="db-av-wrap">
+          <div class="av-lg" id="dash-av" onclick="goPanel('profile')" title="Profile"><span id="dash-av-initial">F</span></div>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div id="dash-alerts"></div>
+
+      <!-- PILLS -->
+      <div class="db-pills" id="g-insights"></div>
+
+      <!-- NET WORTH HERO -->
+      <div class="db-hero">
+        <div class="db-hero-top">
+          <span class="db-hero-lbl">Net Worth</span>
+        </div>
+        <div class="db-hero-val" id="d-nw">₱0.00</div>
+        <div class="db-hero-stats">
+          <div class="db-stat">
+            <span class="db-stat-l">Assets</span>
+            <span class="db-stat-v" id="d-assets">₱0.00</span>
+          </div>
+          <div class="db-stat-div"></div>
+          <div class="db-stat">
+            <span class="db-stat-l">Credit Due</span>
+            <span class="db-stat-v" id="d-credit">₱0.00</span>
+          </div>
+          <div class="db-stat-div"></div>
+          <div class="db-stat">
+            <span class="db-stat-l">Cash Flow</span>
+            <span class="db-stat-v db-stat-flow" id="d-flow">+₱0.00</span>
+          </div>
+          <div class="db-stat-div"></div>
+          <div class="db-stat">
+            <span class="db-stat-l">Savings</span>
+            <span class="db-stat-v" id="d-savings">₱0.00</span>
           </div>
         </div>
       </div>
-      <div id="dash-alerts"></div>
-      <div class="nw-hero">
-        <div class="nw-lbl">Net Worth</div>
-        <div class="nw-val" id="d-nw">₱0.00</div>
-        <div class="nw-row">
-          <div class="nw-item"><div class="nw-il">Total Assets</div><div class="nw-iv" id="d-assets">₱0.00</div></div>
-          <div class="nw-item"><div class="nw-il">Credit Due</div><div class="nw-iv" id="d-credit">₱0.00</div></div>
-          <div class="nw-item"><div class="nw-il">Monthly Flow</div><div class="nw-iv" id="d-flow">+₱0.00</div></div>
-          <div class="nw-item"><div class="nw-il">Net Savings</div><div class="nw-iv" id="d-savings">₱0.00</div></div>
-        </div>
 
-      </div>
+      <!-- KPI ROW -->
       <div class="krow" id="krow"></div>
-      <!-- INSIGHT CARDS: Health Score + Predicted Balance -->
-      <div class="insight-row" id="insight-row">
-        <div class="card icard" id="icard-health">
-          <div class="icard-label">Financial Health Score</div>
-          <div class="icard-value" id="health-score-val" style="color:var(--green)">—</div>
+
+      <!-- CHART + HEALTH (side by side on desktop) -->
+      <div class="db-mid-row">
+        <div class="db-chart-card card wid">
+          <div class="db-card-header">
+            <span class="db-card-title">Income vs Expenses</span>
+            <button class="db-card-link" id="go-charts">See all →</button>
+          </div>
+          <canvas id="c-dash-bar" class="chart-canvas" style="height:140px"></canvas>
+        </div>
+        <div class="card db-health-card" id="icard-health">
+          <div class="db-card-header">
+            <span class="db-card-title">Health Score</span>
+            <span class="db-health-score" id="health-score-val">—</span>
+          </div>
           <div class="health-gauge"><div class="health-fill" id="health-fill" style="width:0%;background:var(--green)"></div></div>
-          <div class="icard-sub" id="health-label">Add transactions to calculate your score</div>
+          <div class="db-health-sub" id="health-label">Log transactions to see your score</div>
           <div class="health-factors" id="health-factors"></div>
+          <!-- forecast tucked in same card on mobile -->
+          <div class="db-forecast-mini" id="icard-forecast" style="display:none">
+            <div class="db-card-title" style="font-size:11px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">30-Day Forecast</div>
+            <div class="db-forecast-val" id="forecast-val">—</div>
+            <div class="icard-sub" id="forecast-sub"></div>
+            <div class="forecast-items" id="forecast-items"></div>
+          </div>
         </div>
-        <div class="card icard" id="icard-forecast">
-          <div class="icard-label">Estimated Balance in 30 Days</div>
-          <div class="icard-value" id="forecast-val" style="color:var(--blue)">—</div>
-          <div class="icard-sub" id="forecast-sub">Based on bills, subscriptions &amp; installments</div>
-          <div class="forecast-items" id="forecast-items"></div>
+      </div>
+
+      <!-- BILLS + ACTIVITY (side by side) -->
+      <div class="db-bottom-row">
+        <div class="card wid db-list-card">
+          <div class="db-card-header">
+            <span class="db-card-title">Bills Due</span>
+            <button class="db-card-link" onclick="goPanel('bills')">Manage →</button>
+          </div>
+          <div id="dash-bills-list"><div class="db-empty">No upcoming bills.</div></div>
+        </div>
+        <div class="card wid db-list-card">
+          <div class="db-card-header">
+            <span class="db-card-title">Recent Activity</span>
+            <button class="db-card-link" onclick="goPanel('expense')">See all →</button>
+          </div>
+          <div id="recent-list"></div>
         </div>
       </div>
-      <div class="dash-row">
-        <div class="card wid"><div class="wtitle">Income vs Expenses <button class="wlink" id="go-charts">View all →</button></div><canvas id="c-dash-bar" class="chart-canvas" style="height:148px"></canvas></div>
+
+      <!-- TOP EXPENSES + DISTRIBUTION (side by side) -->
+      <div class="db-bottom-row">
+        <div class="card wid db-list-card">
+          <div class="db-card-header">
+            <span class="db-card-title">Top Expenses</span>
+            <span class="db-card-sub" id="top-exp-month"></span>
+          </div>
+          <div id="top-exp-list"></div>
+        </div>
+        <div class="card wid db-list-card">
+          <div class="db-card-header">
+            <span class="db-card-title">Spending Split</span>
+          </div>
+          <canvas id="c-dash-pie" class="chart-canvas" style="height:140px"></canvas>
+        </div>
       </div>
-      <div class="dash-row c2">
-        <div class="card wid"><div class="wtitle">Bills Due Soon <button class="wlink" onclick="goPanel('bills')">View all →</button></div><div id="dash-bills-list"><div class="empty" style="padding:1.5rem">No upcoming bills.</div></div></div>
-        <div class="card wid"><div class="wtitle">Recent Activity <button class="wlink" onclick="goPanel('expense')">View all →</button></div><div id="recent-list"></div></div>
+
+      <!-- HIDDEN: insight-row kept for JS compatibility -->
+      <div id="insight-row" style="display:none">
+        <div id="icard-forecast-legacy"></div>
       </div>
-      <div class="dash-row c2">
-        <div class="card wid"><div class="wtitle">Top Expenses This Month <span style="font-size:9.5px;color:var(--t3);font-weight:400" id="top-exp-month"></span></div><div id="top-exp-list"></div></div>
-        <div class="card wid"><div class="wtitle">Expense Distribution</div><canvas id="c-dash-pie" class="chart-canvas" style="height:148px"></canvas></div>
-      </div>
+
     </div>
 
     <!-- NET WORTH -->
@@ -3335,6 +3795,8 @@ document.addEventListener('click',function(e){
   if(!e.target.closest('.search-wrap'))ge('search-results').classList.remove('show');
   if(!e.target.closest('.search-mob-bar')&&!e.target.closest('#search-mob-btn')){
     ge('search-results-mob').classList.remove('show');
+    ge('search-mob-bar').classList.remove('open');
+    ge('search-mob-bar').classList.remove('show');
   }
 });
 
