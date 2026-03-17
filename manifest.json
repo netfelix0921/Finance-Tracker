@@ -1,14 +1,14 @@
 {
   "id": "/",
-  "name": "Felix Finance OS",
-  "short_name": "Felix",
-  "description": "Personal finance tracker for managing income, expenses, accounts, and budgets.",
+  "name": "Fintra",
+  "short_name": "Fintra",
+  "description": "Your Financial Control Center — Track. Manage. Grow.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0a0b14",
-  "theme_color": "#3B6BFF",
+  "background_color": "#0A0618",
+  "theme_color": "#818CF8",
   "icons": [
     {
       "src": "icon-192.png",
