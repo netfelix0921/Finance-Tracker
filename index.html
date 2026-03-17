@@ -1694,7 +1694,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   box-sizing: border-box;
   flex-shrink: 0;
 }
-.bn-bar { display: flex; align-items: center; justify-content: space-around; width: 100%; }
+.bn-bar { display: flex; align-items: center; justify-content: space-around; width: 100%; flex: 1; }
 .bn-item {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   cursor: pointer; padding: 3px 6px; border-radius: 10px;
@@ -1786,7 +1786,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 
 /* On mobile: show bottom nav */
 @media (max-width: 900px) {
-  .bottom-nav { display: flex; flex-direction: column; }
+  .bottom-nav { display: flex; flex-direction: row; }
   .content { padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important; }
 }
 
