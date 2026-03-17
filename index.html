@@ -6,7 +6,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Felix">
+<meta name="apple-mobile-web-app-title" content="Fintra">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#0E1520">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -16,10 +16,10 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<title>Felix — Finance Tracker</title>
+<title>Fintra — Your Financial Control Center</title>
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   Finance Tracker — Premium Design System v3
+   Fintra — Premium Design System v3
    "Quiet Luxury" — A refined, minimal fintech aesthetic
    Inspired by Linear, Stripe, and Apple Wallet
    ═══════════════════════════════════════════════════════════════ */
@@ -2274,7 +2274,8 @@ input[type="date"], input[type="number"] {
       </svg>
     </div>
     <div>
-      <div class="logo-text">Finance Tracker</div>
+      <div class="logo-text">Fintra</div>
+      <div class="logo-sub">Track. Manage. Grow.</div>
     </div>
   </div>
   <div class="sidebar-divider"></div>
@@ -2860,7 +2861,7 @@ input[type="date"], input[type="number"] {
         <input type="file" id="photo-input" accept="image/*" style="display:none">
         <div style="flex:1;min-width:0">
           <div class="pn" id="prof-name-disp">Your Name</div>
-          <div class="pt" id="prof-tag-disp">Personal Finance Tracker</div>
+          <div class="pt" id="prof-tag-disp">Your Financial Control Center</div>
           <div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap">
             <span class="prof-badge" id="pb-acc">0 Accounts</span>
             <span class="prof-badge" id="pb-inc">0 Income</span>
@@ -2953,6 +2954,15 @@ input[type="date"], input[type="number"] {
       </div>
 
       <!-- Danger zone -->
+      <div style="margin-bottom:10px;padding:14px 16px;background:var(--blue-s);border:1px solid rgba(37,99,235,0.18);border-radius:var(--r-md)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--blue)">Restart onboarding</div>
+            <div style="font-size:11.5px;color:var(--t2);margin-top:3px">Walk through the setup steps again.</div>
+          </div>
+          <button class="btn-ghost" onclick="resetOnboarding()" style="font-size:12px;padding:7px 16px;white-space:nowrap;color:var(--blue);border-color:rgba(37,99,235,0.28)">Restart setup</button>
+        </div>
+      </div>
       <div class="dzone" style="padding:16px 20px">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
           <div>
@@ -3060,7 +3070,7 @@ input[type="date"], input[type="number"] {
 
 <script>
 /* ════════════════════════════════════════════════════════════
-   Finance Tracker  |  Single-file app
+   Fintra  |  Single-file app
    ────────────────────────────────────────────────────────────
    TABLE OF CONTENTS (search for "── <name> ──" to jump)
    ─────────────────────────────────────────────────────────
@@ -4748,7 +4758,7 @@ function updateProfileStats(){
 function renderProfile(){
   var p=S.profile;
   sv('pf-name',p.name||'');sv('pf-tag',p.tagline||'');sv('pf-cur',p.currency||'₱');
-  st('prof-name-disp',p.name||'Your Name');st('prof-tag-disp',p.tagline||'Personal Finance Tracker');
+  st('prof-name-disp',p.name||'Your Name');st('prof-tag-disp',p.tagline||'Your Financial Control Center');
   st('prof-initial',(p.name||'Y').charAt(0).toUpperCase());
   // Populate app status date
   var d=new Date();
@@ -4763,7 +4773,7 @@ ge('btn-save-profile').addEventListener('click',function(){
   S.profile.name=name;S.profile.tagline=gv('pf-tag').trim();S.profile.currency=gv('pf-cur');
   var displayName=name||'there';
   st('prof-name-disp',name||'Your Name');
-  st('prof-tag-disp',S.profile.tagline||'Personal Finance Tracker');
+  st('prof-tag-disp',S.profile.tagline||'Your Financial Control Center');
   st('chip-name',name||'You');
   st('gname-span',displayName+'.');
   st('prof-initial',(name||'Y').charAt(0).toUpperCase());
@@ -5454,7 +5464,7 @@ function escICS(str){
 
 function buildICS(events){
   // events: [{uid, summary, description, dtstart, dtend, dtstamp, alarms:[minutesBefore]}]
-  var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Felix Finance//Credit Dues//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Felix Credit Dues','X-WR-CALDESC:Credit card billing due dates from Felix Finance'];
+  var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Fintra//Credit Dues//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Fintra Credit Dues','X-WR-CALDESC:Credit card billing due dates from Fintra'];
   events.forEach(function(ev){
     lines.push('BEGIN:VEVENT');
     lines.push('UID:'+ev.uid);
@@ -5506,7 +5516,7 @@ function exportCalendar(){
         dtstart:dtstart,
         dtend:dtend,
         summary:'💳 '+a.name+' Payment Due',
-        description:'Credit card billing due date for '+a.name+'.\nOutstanding balance: '+cur2+used.toLocaleString('en-PH',{minimumFractionDigits:2})+'\nCredit limit: '+cur2+(a.creditLimit||0).toLocaleString('en-PH',{minimumFractionDigits:2})+'\n\nManage in Finance Tracker.',
+        description:'Credit card billing due date for '+a.name+'.\nOutstanding balance: '+cur2+used.toLocaleString('en-PH',{minimumFractionDigits:2})+'\nCredit limit: '+cur2+(a.creditLimit||0).toLocaleString('en-PH',{minimumFractionDigits:2})+'\n\nManage in Fintra.',
         alarms:[1440, 4320] // 1 day before and 3 days before
       });
     }
@@ -5524,7 +5534,7 @@ function exportCalendar(){
       dtstart:dtstart,
       dtend:dtend,
       summary:'⚠️ Credit Due: '+e.desc+' ('+e.card+')',
-      description:'Unpaid credit charge due on '+e.due+'.\nAmount: '+cur2+e.amt.toLocaleString('en-PH',{minimumFractionDigits:2})+'\nCard: '+e.card+'\nCategory: '+e.category+(e.note?'\nNote: '+e.note:'')+'\n\nPay via Finance Tracker.',
+      description:'Unpaid credit charge due on '+e.due+'.\nAmount: '+cur2+e.amt.toLocaleString('en-PH',{minimumFractionDigits:2})+'\nCard: '+e.card+'\nCategory: '+e.category+(e.note?'\nNote: '+e.note:'')+'\n\nPay via Fintra.',
       alarms:[480, 1440, 4320] // 8 hours, 1 day, 3 days before
     });
   });
@@ -7132,18 +7142,83 @@ function wireDashButtons(){
 
 
 var _obStep=0;
+// Detect iOS Safari running in browser (not already installed as PWA)
+var _isIosSafari=(function(){
+  var ua=navigator.userAgent;
+  var isIos=/iphone|ipad|ipod/i.test(ua);
+  var isStandalone=('standalone' in navigator)&&navigator.standalone;
+  var isSafari=/^((?!chrome|android|crios|fxios).)*safari/i.test(ua);
+  return isIos&&isSafari&&!isStandalone;
+})();
+var _isAndroid=/android/i.test(navigator.userAgent)&&!navigator.standalone;
+
+function _buildInstallFields(){
+  if(navigator.standalone){
+    // Already running as installed PWA
+    return '<div style="margin:4px 0 8px;padding:14px 16px;background:var(--green-s);border:1px solid rgba(5,150,105,0.20);border-radius:12px;display:flex;align-items:center;gap:12px">'
+      +'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+      +'<div><div style="font-size:13px;font-weight:600;color:var(--green)">Already installed!</div><div style="font-size:12px;color:var(--t3);margin-top:2px">Fintra is running as a home screen app.</div></div>'
+      +'</div>';
+  }
+  if(_isIosSafari){
+    return '<div style="margin:4px 0 8px">'
+      // Step 1
+      +'<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:var(--bg);border-radius:10px;margin-bottom:8px">'
+      +'<div style="width:28px;height:28px;border-radius:8px;background:var(--blue-s);display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+      +'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>'
+      +'</div>'
+      +'<div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Tap the Share button</div>'
+      +'<div style="font-size:11.5px;color:var(--t3);margin-top:2px">The <strong style="color:var(--t2)">\u2191</strong> icon at the bottom of Safari</div></div>'
+      +'</div>'
+      // Step 2
+      +'<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:var(--bg);border-radius:10px;margin-bottom:8px">'
+      +'<div style="width:28px;height:28px;border-radius:8px;background:var(--blue-s);display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+      +'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>'
+      +'</div>'
+      +'<div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Tap \u201cAdd to Home Screen\u201d</div>'
+      +'<div style="font-size:11.5px;color:var(--t3);margin-top:2px">Scroll down in the share menu to find it</div></div>'
+      +'</div>'
+      // Step 3
+      +'<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:var(--bg);border-radius:10px">'
+      +'<div style="width:28px;height:28px;border-radius:8px;background:var(--green-s);display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+      +'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+      +'</div>'
+      +'<div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Tap \u201cAdd\u201d and open Fintra</div>'
+      +'<div style="font-size:11.5px;color:var(--t3);margin-top:2px">Fintra will appear on your home screen like a native app</div></div>'
+      +'</div>'
+      +'</div>';
+  }
+  if(_isAndroid){
+    return '<div style="margin:4px 0 8px;padding:12px 14px;background:var(--bg);border-radius:10px;font-size:12.5px;color:var(--t2);line-height:1.6">'
+      +'Tap the <strong style="color:var(--t1)">\u22EE menu</strong> in Chrome, then tap <strong style="color:var(--t1)">\u201cAdd to Home screen\u201d</strong> or <strong style="color:var(--t1)">\u201cInstall app\u201d</strong>.'
+      +'</div>';
+  }
+  // Desktop or other browser
+  return '<div style="margin:4px 0 8px;padding:12px 14px;background:var(--bg);border-radius:10px;font-size:12.5px;color:var(--t2);line-height:1.6">'
+    +'On iPhone, open Fintra in <strong style="color:var(--t1)">Safari</strong>, tap the <strong style="color:var(--t1)">Share \u2191</strong> button, then <strong style="color:var(--t1)">\u201cAdd to Home Screen\u201d</strong>.'
+    +'</div>';
+}
+
 var OB_STEPS=[
   {ico:'<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',bg:'var(--blue-s)',col:'var(--blue)',
-   title:'Welcome to Felix',desc:"Your personal finance tracker. Let\u2019s set you up in 3 quick steps.",
-   fields:'<div class="fr"><div class="fg"><label>Your name</label><input type="text" id="ob-name" placeholder="e.g. Felix Marco" style="font-size:16px"></div></div>',btn:'Continue',
+   title:'Welcome to Fintra',desc:"Your financial control center. Let\u2019s set you up in a few quick steps.",
+   fields:'<div class="fr"><div class="fg"><label>Your name</label><input type="text" id="ob-name" placeholder="e.g. Juan dela Cruz" style="font-size:16px"></div></div>',btn:'Continue',
    next:function(){var n=(document.getElementById('ob-name')||{}).value||'';if(!n.trim()){toast('Please enter your name.','error');return false;}S.profile.name=n.trim();document.querySelectorAll('#gname-span,#chip-name,#prof-name-disp').forEach(function(el){if(el.id==='gname-span')el.textContent=n.trim()+'.';else el.textContent=n.trim();});save();return true;}},
   {ico:'<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',bg:'var(--green-s)',col:'var(--green)',
-   title:'Add your first account',desc:'Connect your main bank or e-wallet so Felix can track your balance.',
+   title:'Add your first account',desc:'Connect your main bank or e-wallet so Fintra can track your balance.',
    fields:'<div class="fr3"><div class="fg"><label>Account name</label><input type="text" id="ob-aname" placeholder="e.g. BDO Savings" style="font-size:16px"></div><div class="fg"><label>Balance</label><input type="number" id="ob-abal" placeholder="0.00" style="font-size:16px"></div><div class="fg"><label>Type</label><select id="ob-atype" style="font-size:16px"><option>Savings</option><option>Checking</option><option>Cash</option><option>E-Wallet</option></select></div></div>',btn:'Add account',
    next:function(){var n=(document.getElementById('ob-aname')||{}).value||'';if(!n.trim()){toast('Enter an account name.','error');return false;}var b=parseFloat((document.getElementById('ob-abal')||{}).value)||0;var t=(document.getElementById('ob-atype')||{}).value||'Savings';S.accounts.push({id:nxtId(),name:n.trim(),type:t,num:'',balance:b,_openingBalance:b,color:'#3B6BFF',accentColor:'#3B6BFF',archived:false,isCC:false,logo:null});save();renderAccounts();fillSelects();return true;}},
+  {ico:'<svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>',
+   bg:'var(--blue-s)',col:'var(--blue)',
+   title:'Install Fintra on your phone',
+   desc:'Get the full app experience \u2014 works offline, opens instantly, no browser bar.',
+   fields:'',
+   _fieldsLazy:true,
+   btn:'Got it \u2014 I\u2019ll install it',
+   next:function(){return true;}},
   {ico:'<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',bg:'rgba(124,58,237,0.10)',col:'#7C3AED',
-   title:"You\u2019re all set!",desc:'Start logging income, tracking expenses, or setting a savings goal. Felix handles the rest.',
-   fields:'',btn:'Start using Felix',
+   title:"You\u2019re all set!",desc:'Start logging income, tracking expenses, or setting a savings goal. Fintra handles the rest.',
+   fields:'',btn:'Start using Fintra',
    next:function(){return true;}}
 ];
 function _obRender(){
@@ -7151,13 +7226,20 @@ function _obRender(){
   if(dots){dots.innerHTML=OB_STEPS.map(function(_,i){return'<div class="onboard-dot'+(i<=_obStep?' on':'')+'">'+'</div>';}).join('');}
   var s=OB_STEPS[_obStep];
   var body=document.getElementById('ob-body');if(!body)return;
-  body.innerHTML='<div class="onboard-ico" style="background:'+s.bg+';color:'+s.col+'">'+s.ico+'</div>'
-    +'<div class="onboard-title">'+s.title+'</div><div class="onboard-desc">'+s.desc+'</div>'+s.fields
-    +'<div class="onboard-foot">'+(_obStep<OB_STEPS.length-1?'<button class="ob-skip" id="ob-skip">Skip</button>':'')
-    +'<button class="btn-add" id="ob-btn" style="flex:1">'+s.btn+'</button></div>';
+  var fields=s.fields||'';
+  var bg=s.bg,col=s.col,title=s.title,desc=s.desc,btn=s.btn;
+  if(s._fieldsLazy){
+    var already=!!(navigator.standalone);
+    fields=_buildInstallFields();
+    if(already){bg='var(--green-s)';col='var(--green)';title='Running as app \u2713';desc='Fintra is already installed on your home screen. You\u2019re all set!';btn='Finish setup';}
+  }
+  body.innerHTML='<div class="onboard-ico" style="background:'+bg+';color:'+col+'">'+s.ico+'</div>'
+    +'<div class="onboard-title">'+title+'</div><div class="onboard-desc">'+desc+'</div>'+fields
+    +'<div class="onboard-foot">'+(_obStep<OB_STEPS.length-1?'<button class="ob-skip" id="ob-skip">Skip setup</button>':'')
+    +'<button class="btn-add" id="ob-btn" style="flex:1">'+btn+'</button></div>';
   setTimeout(function(){
-    var btn=document.getElementById('ob-btn');
-    if(btn)btn.addEventListener('click',function(){
+    var obBtn=document.getElementById('ob-btn');
+    if(obBtn)obBtn.addEventListener('click',function(){
       if(!OB_STEPS[_obStep].next())return;
       if(_obStep>=OB_STEPS.length-1){_obClose();}else{_obStep++;_obRender();}
     });
@@ -7171,11 +7253,20 @@ function _obClose(){
   S.profile._onboarded=true;save();renderDash();renderAccounts();
 }
 function maybeShowOnboard(){
-  if(!S.profile._onboarded&&!S.accounts.length&&!S.income.length){
+  var noData=!S.accounts.length&&!S.income.length;
+  if(!S.profile._onboarded||noData){
+    S.profile._onboarded=false;
     _obStep=0;
     var ov=document.getElementById('onboard-ov');if(ov)ov.style.display='flex';
     _obRender();
   }
+}
+function resetOnboarding(){
+  S.profile._onboarded=false;
+  save();
+  _obStep=0;
+  var ov=document.getElementById('onboard-ov');if(ov)ov.style.display='flex';
+  _obRender();
 }
 
 
