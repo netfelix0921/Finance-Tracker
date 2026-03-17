@@ -120,7 +120,7 @@ html, body {
 }
 
 /* ── iOS PWA TOUCH FIX ── */
-button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close,
+button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
 .ham-btn,.search-mob-btn,.sr-item,.mob-del,.mob-edit,.mob-pay,.mob-sub-pause,
 .mob-sub-skip,.mob-del-sub,.bill-pay-btn,.bill-edit-btn,.bill-del-btn,
 .btn-add,.btn-ghost,.btn-save,.btn-danger,.btn-icon,.btn-pay,.bdel,.bedit,
@@ -1702,14 +1702,14 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
    BOTTOM NAV BAR
    ═══════════════════════════════════════════════════════════════ */
 .bottom-nav {
-  display: none;
+  display: none; /* keep for desktop */
 
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
 
-  height: 52px; /* 🔥 tighter */
+  height: 52px;
 
   display: flex;
   justify-content: space-around;
@@ -1722,8 +1722,10 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   border-top: 0.5px solid rgba(0,0,0,0.08);
   z-index: 150;
 
-  padding-top: 2px;
+  /* ✅ FIX: Only safe area inset, no extra padding */
+  padding: 0;
   padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: content-box;
 }
 .bn-bar {
   display: grid;
@@ -1731,6 +1733,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   align-items: center;
   justify-items: center;
   width: 100%;
+  height: 52px; /* Fixed height */
 }
 .bn-item {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -1773,9 +1776,10 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), opacity 0.2s;
   flex-shrink: 0;
-  margin-bottom: 4px;
+  margin-bottom: 0; /* Remove extra margin */
+  transform: translateY(-14px); /* Keep the floating effect */
 }
-.bn-add:active { transform: scale(0.92); box-shadow: 0 2px 10px rgba(129,140,248,0.3); }
+.bn-add:active { transform: scale(0.92) translateY(-14px); box-shadow: 0 2px 10px rgba(129,140,248,0.3); }
 .bn-add svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
 /* Badge on bills icon */
 .bn-badge {
@@ -1853,7 +1857,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
 }
 .bottom-nav.scrolled .bn-add {
-  transform: scale(1.1);
+  transform: scale(1.1) translateY(-14px);
   box-shadow: 0 8px 24px rgba(37,99,235,0.5);
 }
 .bn-item {
@@ -2017,7 +2021,7 @@ html[data-theme="dark"] .bn-sheet-btn { background: var(--bg); border-color: var
 
 /* ── 1. SCROLL FIX: content never hidden behind bottom nav ── */
 .content {
-  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
 }
 @media(min-width:901px) {
   /* desktop: no bottom nav */
@@ -2322,7 +2326,8 @@ input[type="date"], input[type="number"] {
 .content {
   padding: 16px !important;
   padding-top: calc(46px + env(safe-area-inset-top) + 14px) !important;
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px)) !important;
+  /* ✅ FIX: Use 52px for bottom nav height, not 68px */
+  padding-bottom: calc(52px + env(safe-area-inset-bottom)) !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
   flex: 1 !important;
@@ -2332,6 +2337,7 @@ input[type="date"], input[type="number"] {
   .content {
     padding: 24px 28px !important;
     padding-top: calc(46px + env(safe-area-inset-top) + 24px) !important;
+    /* ✅ FIX: On desktop, no bottom nav, so no extra padding */
     padding-bottom: 24px !important;
   }
 }
@@ -6155,7 +6161,7 @@ function renderSavingsGoals(){
         // ── Head: icon + name + actions ──
         +'<div class="sg-card-head">'
           +'<div class="sg-card-ico" style="background:'+col.bg+';color:'+col.text+'">'
-            +'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>'
+            +'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>'
           +'</div>'
           +'<div class="sg-card-info">'
             +'<div class="sg-card-name">'+escHtml(g.name)+'</div>'
@@ -6946,7 +6952,7 @@ var BILL_CATS=[
   {name:'Insurance',stroke:'#059669',color:'rgba(14,168,96,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5L2 4v4c0 3.5 2.5 6 6 7 3.5-1 6-3.5 6-7V4L8 1.5z"/><polyline points="5,8 7,10 11,6"/></svg>'},
   {name:'Loan',stroke:'#2563EB',color:'rgba(59,107,255,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="5" width="13" height="9" rx="1.5"/><path d="M5 5V3.5A1.5 1.5 0 0 1 6.5 2h3A1.5 1.5 0 0 1 11 3.5V5"/><line x1="8" y1="8.5" x2="8" y2="11.5"/><line x1="6.5" y1="10" x2="9.5" y2="10"/></svg>'},
   {name:'TV/Cable',stroke:'#D97706',color:'rgba(217,119,6,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="13" height="9" rx="1.5"/><line x1="5" y1="14" x2="11" y2="14"/><line x1="8" y1="12" x2="8" y2="14"/></svg>'},
-  {name:'Other',stroke:'#6B7280',color:'rgba(142,146,184,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="8.5"/><line x1="8" y1="10.5" x2="8" y2="11.5"/></svg>'}
+  {name:'Other',stroke:'#6B7280',color:'rgba(142,146,184,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="8.5"/><line x1="8" y1="10.5" x2="8" y2="11.5"/></svg>'}
 ];
 
 function billCatInfo(cat){
