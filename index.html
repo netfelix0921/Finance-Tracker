@@ -1690,11 +1690,11 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   z-index: 150;
-  padding: 4px 4px 0;
+  padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
   box-sizing: border-box;
   flex-shrink: 0;
 }
-.bn-bar { display: flex; align-items: center; justify-content: space-around; width: 100%; padding-bottom: env(safe-area-inset-bottom); }
+.bn-bar { display: flex; align-items: center; justify-content: space-around; width: 100%; }
 .bn-item {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   cursor: pointer; padding: 3px 6px; border-radius: 10px;
@@ -1714,18 +1714,10 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 .bn-lbl {
   font-size: 9px; font-weight: 500; color: var(--t3);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  transition: color var(--dur-fast), opacity var(--dur-fast), max-height var(--dur-fast);
-  white-space: nowrap;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
+  transition: color var(--dur-fast); white-space: nowrap;
 }
 .bn-item.active .bn-ico svg { stroke: var(--blue); }
-.bn-item.active .bn-lbl {
-  color: var(--blue); font-weight: 600;
-  opacity: 1;
-  max-height: 14px;
-}
+.bn-item.active .bn-lbl { color: var(--blue); font-weight: 600; }
 .bn-item.active .bn-active-dot { display: block; }
 .bn-active-dot {
   display: none; width: 4px; height: 4px;
@@ -1734,7 +1726,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 }
 /* Add button — center circle */
 .bn-add {
-  width: 44px; height: 44px; border-radius: 50%;
+  width: 40px; height: 40px; border-radius: 50%;
   background: var(--blue); border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 14px rgba(37,99,235,0.35);
@@ -1743,7 +1735,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   flex-shrink: 0;
 }
 .bn-add:active { transform: scale(0.94); box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
-.bn-add svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.bn-add svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
 /* Badge on bills icon */
 .bn-badge {
   position: absolute; top: -3px; right: -5px;
