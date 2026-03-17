@@ -1714,10 +1714,10 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 .bn-lbl {
   font-size: 9px; font-weight: 500; color: var(--t3);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  transition: color var(--dur-fast); white-space: nowrap;
+  white-space: nowrap; display: none;
 }
 .bn-item.active .bn-ico svg { stroke: var(--blue); }
-.bn-item.active .bn-lbl { color: var(--blue); font-weight: 600; }
+.bn-item.active .bn-lbl { display: block; color: var(--blue); font-weight: 600; }
 
 /* Add button — center circle */
 .bn-add {
