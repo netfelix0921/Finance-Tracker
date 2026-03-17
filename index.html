@@ -383,7 +383,31 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
   .search-mob-btn { display: none !important; }
   .topbar-right .search-wrap { display: flex !important; }
 }
+/* ✅ tighten nav buttons */
+.bottom-nav .nav-btn {
+  gap: 0px;
+  padding: 2px 0;
+  font-size: 10px;
+}
 
+/* ✅ fix label spacing */
+.bottom-nav .nav-btn span {
+  margin-top: 0px;
+  line-height: 1;
+}
+
+/* ✅ smaller icons */
+.bottom-nav .nav-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ✅ float center button */
+.nav-center-btn {
+  width: 50px;
+  height: 50px;
+  transform: translateY(-14px);
+}
 /* ═══════════════════════════════════════════════════════════════
    TOPBAR
    ═══════════════════════════════════════════════════════════════ */
@@ -1685,7 +1709,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   left: 0;
   right: 0;
 
-  height: 56px;
+  height: 52px;
 
   display: flex;
   justify-content: space-around;
