@@ -416,6 +416,8 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
 .topbar-title { display: block; font-size: 15px; font-weight: 600; color: var(--t1); letter-spacing: -0.2px; }
 @media(min-width:901px){
   .topbar-title { display: block; font-size:14px; font-weight:600; color:var(--t1); letter-spacing:-0.2px; }
+  /* Hide "Fintra" brand text on desktop — sidebar already shows it */
+  .topbar-brand { display: none; }
 }
 /* Logo icon always visible; title always visible next to it */
 .topbar-logo { transition: opacity var(--dur-fast); }
@@ -1692,7 +1694,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   z-index: 150;
-  padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+  padding: 4px 4px env(safe-area-inset-bottom);
   flex-shrink: 0;
 }
 .bn-bar {
@@ -2489,6 +2491,7 @@ input[type="date"], input[type="number"] {
 <div class="main">
   <div class="topbar">
     <div class="topbar-left">
+      <!-- Logo icon — always visible, clicking goes to dashboard -->
       <div class="topbar-logo" onclick="goPanel('dashboard')" title="Dashboard">
         <svg width="28" height="28" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -2506,6 +2509,7 @@ input[type="date"], input[type="number"] {
         </svg>
         <span class="topbar-brand">Fintra</span>
       </div>
+      <span class="topbar-title" id="topbar-title">Dashboard</span>
     </div>
     <div class="topbar-right">
       <button class="tb-btn search-mob-btn" id="search-mob-btn" title="Search">
@@ -3485,6 +3489,7 @@ function goPanel(name){
   ge('panel-'+name).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   var btn=document.querySelector('.nav-btn[data-panel="'+name+'"]');if(btn)btn.classList.add('active');
+  st('topbar-title',TITLES[name]||name);
   // Topbar always visible
   var tb=document.querySelector('.topbar');
   if(tb){tb.classList.remove('tb-hidden');}
