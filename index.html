@@ -588,7 +588,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
   flex: 1; overflow-y: auto; overflow-x: hidden;
   padding: 18px 20px;
   padding-top: calc(50px + env(safe-area-inset-top) + 16px);
-  padding-bottom: 70px;
+  padding-bottom: env(safe-area-inset-bottom);
   -webkit-overflow-scrolling: touch;
   transition: padding-top 0.3s var(--ease);
   width: 100%;
@@ -1723,7 +1723,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   z-index: 150;
 
   /* ✅ FIX: Use padding to create space for the nav items */
-  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  padding: 8px 0 env(safe-area-inset-bottom);
   box-sizing: content-box;
 }
 .bn-bar {
