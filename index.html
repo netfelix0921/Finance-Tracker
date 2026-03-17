@@ -5152,6 +5152,15 @@ function renderInstallments(){
   el.querySelectorAll('.inst-del').forEach(function(btn){btn.addEventListener('click',function(){
     var id=this.dataset.id;
     confirmModal('Remove this installment plan? Existing logged charges will remain.',function(){
+      // Refund the remaining unspent portion back to usedCredit
+      var instToRemove=S.installments.find(function(x){return String(x.id)===String(id);});
+      if(instToRemove&&instToRemove.active){
+        var ccRef=findAcc(instToRemove.cardId);
+        if(ccRef){
+          var remaining=+(instToRemove.totalAmt-((instToRemove.paidMonths||0)*instToRemove.monthlyAmt)).toFixed(2);
+          if(remaining>0)ccRef.usedCredit=+Math.max(0,(ccRef.usedCredit||0)-remaining).toFixed(2);
+        }
+      }
       S.installments=S.installments.filter(function(p){return String(p.id)!==String(id);});
       save();renderInstallments();toast('Plan removed.');
     },true);
@@ -5193,11 +5202,13 @@ function openAddInstallment(){
     var ccAcc=findAcc(cardId);
     if(ccAcc){
       var avail=Math.max(0,(ccAcc.creditLimit||0)-(ccAcc.usedCredit||0));
-      if(monthly>avail){toast('⚠ Monthly payment ('+fmt(monthly)+') exceeds available credit ('+fmt(avail)+').','error');return;}
+      if(total>avail){toast('⚠ Total amount ('+fmt(total)+') exceeds available credit ('+fmt(avail)+').','error');return;}
+      // Deduct full purchase amount from credit limit immediately
+      ccAcc.usedCredit=+((ccAcc.usedCredit||0)+total).toFixed(2);
     }
     S.installments.push({id:nxtId(),name:name,cardId:cardId,category:gv('ip-cat'),totalAmt:total,monthlyAmt:monthly,months:months,paidMonths:0,startDate:startDate,nextDate:startDate,note:gv('ip-note'),active:true});
-    save();renderInstallments();closeModal();
-    toast('Installment plan created ✓ — '+fmt(monthly)+'/mo × '+months+' months','success');
+    save();renderInstallments();renderAccounts();renderDash();closeModal();
+    toast('Installment plan created ✓ — '+fmt(total)+' charged to '+ccAcc.name+' · '+fmt(monthly)+'/mo × '+months+' months','success');
   });
   setTimeout(function(){calcInstallment();},30);
 }
@@ -5208,7 +5219,15 @@ function calcInstallment(){
   if(total>0&&months>0){
     var monthly=total/months;
     calc.style.display='block';
-    calc.innerHTML='📊 <strong>'+fmt(monthly)+'</strong>/month × <strong>'+months+'</strong> months = <strong>'+fmt(total)+'</strong> total';
+    var cardId=gv('ip-card');
+    var ccA=findAcc(cardId);
+    var avail=ccA?Math.max(0,(ccA.creditLimit||0)-(ccA.usedCredit||0)):0;
+    var overLimit=ccA&&total>avail;
+    calc.style.display='block';
+    calc.innerHTML='<strong>'+fmt(monthly)+'</strong>/month × <strong>'+months+'</strong> months = <strong>'+fmt(total)+'</strong> total'
+      +(ccA?'<br><span style="font-size:11px;color:'+(overLimit?'var(--red)':'var(--green)')+'">'+
+        (overLimit?'⚠ Exceeds available credit ('+fmt(avail)+')':'✓ Available credit: '+fmt(avail)+'  →  after: '+fmt(avail-total))
+      +'</span>':'');
   } else calc.style.display='none';
 }
 
@@ -5217,10 +5236,8 @@ function logInstallmentMonth(id){
   if(!p)return;
   var ccAcc=findAcc(p.cardId);
   if(!ccAcc){toast('Credit card not found.','error');return;}
-  var avail=Math.max(0,(ccAcc.creditLimit||0)-(ccAcc.usedCredit||0));
-  if(p.monthlyAmt>avail){toast('⚠ Over credit limit! Available: '+fmt(avail),'error');return;}
   var chargeDate=p.nextDate||today();
-  ccAcc.usedCredit=+((ccAcc.usedCredit||0)+p.monthlyAmt).toFixed(2);
+  // usedCredit already reserved at plan creation — just log the monthly entry
   var monthNum=(p.paidMonths||0)+1;
   S.credit.push({id:nxtId(),date:chargeDate,desc:p.name+' ('+monthNum+'/'+p.months+')',card:ccAcc.name,cardId:ccAcc.id,category:p.category||'Shopping',type:'Charge',due:'',note:'Installment'+(p.note?' — '+p.note:''),amt:p.monthlyAmt,installmentId:p.id});
   p.paidMonths=monthNum;
@@ -5239,7 +5256,8 @@ function processInstallments(){
       var alreadyLogged=S.credit.some(function(e){return e.installmentId&&String(e.installmentId)===String(p.id)&&e.date===p.nextDate;});
       if(!alreadyLogged){
         var ccAcc=findAcc(p.cardId);
-        if(ccAcc)ccAcc.usedCredit=+((ccAcc.usedCredit||0)+p.monthlyAmt).toFixed(2);
+        // usedCredit was already reserved when plan was created — just log the monthly entry
+        // When this monthly charge is paid, payCharge() will reduce usedCredit
         var monthNum=(p.paidMonths||0)+1;
         S.credit.push({id:nxtId(),date:p.nextDate,desc:p.name+' ('+monthNum+'/'+p.months+')',card:ccAcc?ccAcc.name:'CC',cardId:p.cardId,category:p.category||'Shopping',type:'Charge',due:'',note:'Installment'+(p.note?' — '+p.note:''),amt:p.monthlyAmt,installmentId:p.id});
         p.paidMonths=monthNum;changed=true;
