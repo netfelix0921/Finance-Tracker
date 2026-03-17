@@ -413,9 +413,22 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
   flex-shrink: 0;
   margin-right: 10px;
 }
-.topbar-title { display: block; font-size: 15px; font-weight: 600; color: var(--t1); letter-spacing: -0.2px; }
+.topbar-title {
+  display: block;
+  font-size: 18px;       /* 🔥 bigger */
+  font-weight: 700;      /* stronger */
+  color: var(--t1);
+  letter-spacing: -0.3px;
+}
+
 @media(min-width:901px){
-  .topbar-title { display: block; font-size:14px; font-weight:600; color:var(--t1); letter-spacing:-0.2px; }
+  .topbar-title {
+    display: block;
+    font-size: 18px;     /* keep same size */
+    font-weight: 700;
+    color: var(--t1);
+    letter-spacing: -0.3px;
+  }
 }
 /* Logo icon always visible; title always visible next to it */
 .topbar-logo { transition: opacity var(--dur-fast); }
