@@ -407,7 +407,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
 .topbar-left { display: flex; align-items: center; gap: 0; min-width: 0; }
 /* Logo icon always visible in topbar on all panels/sizes */
 .topbar-logo {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center;
   cursor: pointer; user-select: none;
   -webkit-tap-highlight-color: transparent;
   flex-shrink: 0;
@@ -416,27 +416,9 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
 .topbar-title { display: block; font-size: 15px; font-weight: 600; color: var(--t1); letter-spacing: -0.2px; }
 @media(min-width:901px){
   .topbar-title { display: block; font-size:14px; font-weight:600; color:var(--t1); letter-spacing:-0.2px; }
-  /* Hide "Fintra" brand text on desktop — sidebar already shows it */
-  .topbar-brand { display: none; }
 }
 /* Logo icon always visible; title always visible next to it */
 .topbar-logo { transition: opacity var(--dur-fast); }
-.topbar-brand {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 15px; font-weight: 700; letter-spacing: -0.4px;
-  color: var(--t1); line-height: 1;
-}
-/* Subtle developer credit at the bottom of sidebar */
-.sidebar-credit {
-  text-align: center;
-  font-size: 9.5px;
-  color: var(--t4);
-  letter-spacing: 0.04em;
-  padding: 6px 0 2px;
-  font-weight: 400;
-  opacity: 0.7;
-}
-html[data-theme="dark"] .sidebar-credit { color: var(--t3); opacity: 0.4; }
 .topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
 /* Panel hero header — replaces .ph on accounts/bills/profile ──────── */
@@ -1694,7 +1676,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   z-index: 150;
-  padding: 4px 4px env(safe-area-inset-bottom);
+  padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
   flex-shrink: 0;
 }
 .bn-bar {
@@ -2483,7 +2465,6 @@ input[type="date"], input[type="number"] {
         <svg id="theme-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
       </button>
     </div>
-    <div class="sidebar-credit">made by Felix Marco</div>
   </div>
 </aside>
 
@@ -2507,7 +2488,6 @@ input[type="date"], input[type="number"] {
           </g>
           <rect x="52" y="-8" width="14" height="130" rx="7" fill="url(#tb-sl)" transform="rotate(30 55 55)" clip-path="url(#tb-clip)" opacity="0.95"/>
         </svg>
-        <span class="topbar-brand">Fintra</span>
       </div>
       <span class="topbar-title" id="topbar-title">Dashboard</span>
     </div>
