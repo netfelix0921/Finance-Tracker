@@ -317,7 +317,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
    ═══════════════════════════════════════════════════════════════ */
 .main {
   flex: 1; display: flex; flex-direction: column;
-  overflow: clip; min-width: 0;
+  overflow: hidden; min-width: 0;
   background: var(--bg);
 }
 
@@ -1846,14 +1846,14 @@ body, .card, .panel, input, select, textarea, button {
 /* ── 11. UNIFIED FORM INPUT SIZE ── */
 input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
 select, textarea {
-  font-size: 14px !important;
+  font-size: 16px !important;
   padding: 8px 11px !important;
   border-radius: 9px !important;
   font-family: 'DM Sans', sans-serif !important;
 }
 input[type="date"], input[type="number"] {
   font-family: 'DM Mono', monospace !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 .fg label {
   font-size: 10.5px !important; font-weight: 600 !important;
@@ -2896,7 +2896,7 @@ input[type="date"], input[type="number"] {
    BOOT             processSubscriptions → renderDash → …
    ════════════════════════════════════════════════════════ */
 var SK='felix_v6';var S;
-function defaultState(){return{accounts:[],income:[],expense:[],transfer:[],credit:[],savings:[],subscriptions:[],goals:[],installments:[],bills:[],savingsGoals:[],profile:{name:'',tagline:'',currency:'₱',photo:''},nextId:1};}
+function defaultState(){return{accounts:[],income:[],expense:[],transfer:[],credit:[],savings:[],subscriptions:[],goals:[],installments:[],bills:[],savingsGoals:[],dismissedAlerts:[],profile:{name:'',tagline:'',currency:'₱',photo:''},nextId:1};}
 function loadState(){
   try{
     var r=localStorage.getItem(SK);
@@ -2909,6 +2909,7 @@ function loadState(){
         if(!d.installments)d.installments=[];
         if(!d.bills)d.bills=[];
         if(!d.savingsGoals)d.savingsGoals=[];
+        if(!d.dismissedAlerts)d.dismissedAlerts=[];
         return d;
       }
     }
@@ -3002,22 +3003,22 @@ function renderAlerts(){
   S.goals.forEach(function(g){
     var spent=S.expense.filter(function(e){return e.date.startsWith(ym)&&e.category===g.category;}).reduce(function(s,e){return s+e.amt;},0);
     var pct=spent/g.limit;
-    if(pct>=1)alerts.push({type:'danger',msg:'<b>'+g.name+'</b> budget exceeded — spent '+fmt(spent)+' of '+fmt(g.limit)});
-    else if(pct>=0.8)alerts.push({type:'warn',msg:'<b>'+g.name+'</b> at '+Math.round(pct*100)+'% — '+fmt(g.limit-spent)+' remaining'});
+    if(pct>=1)alerts.push({key:'bud-over-'+g.id,type:'danger',msg:'<b>'+g.name+'</b> budget exceeded — spent '+fmt(spent)+' of '+fmt(g.limit)});
+    else if(pct>=0.8)alerts.push({key:'bud-warn-'+g.id,type:'warn',msg:'<b>'+g.name+'</b> at '+Math.round(pct*100)+'% — '+fmt(g.limit-spent)+' remaining'});
   });
   // Overdue bills
   (S.bills||[]).filter(function(b){return!b.isPaid&&b.dueDate&&b.dueDate<today();}).slice(0,2).forEach(function(b){
     var daysAgo=Math.ceil((new Date()-new Date(b.dueDate))/(864e5));
-    alerts.push({type:'danger',msg:'Bill overdue: <b>'+b.name+'</b> — '+fmt(b.amt)+' (was due '+b.dueDate+', '+daysAgo+'d ago)'});
+    alerts.push({key:'bill-ov-'+b.id,type:'danger',msg:'Bill overdue: <b>'+b.name+'</b> — '+fmt(b.amt)+' (was due '+b.dueDate+', '+daysAgo+'d ago)'});
   });
   // Bills due soon (within 3 days)
   (S.bills||[]).filter(function(b){if(b.isPaid)return false;var d=Math.ceil((new Date(b.dueDate)-new Date())/(864e5));return d>=0&&d<=3;}).slice(0,2).forEach(function(b){
     var d=Math.ceil((new Date(b.dueDate)-new Date())/(864e5));
-    alerts.push({type:'warn',msg:'Bill due '+(d===0?'today':'in '+d+'d')+': <b>'+b.name+'</b> — '+fmt(b.amt)});
+    alerts.push({key:'bill-soon-'+b.id,type:'warn',msg:'Bill due '+(d===0?'today':'in '+d+'d')+': <b>'+b.name+'</b> — '+fmt(b.amt)});
   });
   // Overdue credit transactions
   S.credit.filter(function(e){return e.type==='Charge'&&!e.isPaid&&e.due&&e.due<today();}).slice(0,2).forEach(function(e){
-    alerts.push({type:'danger',msg:'Credit charge overdue: <b>'+e.desc+'</b> — '+fmt(e.amt)+' (was due '+e.due+')'});
+    alerts.push({key:'cr-ov-'+e.id,type:'danger',msg:'Credit charge overdue: <b>'+e.desc+'</b> — '+fmt(e.amt)+' (was due '+e.due+')'});
   });
   // CC billing due soon
   var now=new Date();
@@ -3025,13 +3026,31 @@ function renderAlerts(){
     var thisMonth=new Date(now.getFullYear(),now.getMonth(),a.billingDay);
     var dueDate=thisMonth<=now?new Date(now.getFullYear(),now.getMonth()+1,a.billingDay):thisMonth;
     var daysLeft=Math.ceil((dueDate-now)/(864e5));
-    if(daysLeft<=5)alerts.push({type:daysLeft<=1?'danger':'warn',msg:'<b>'+a.name+'</b> payment due '+(daysLeft<=0?'today':'in '+daysLeft+'d')+' — owed: '+fmt(a.usedCredit||0)});
+    if(daysLeft<=5)alerts.push({key:'cc-due-'+a.id,type:daysLeft<=1?'danger':'warn',msg:'<b>'+a.name+'</b> payment due '+(daysLeft<=0?'today':'in '+daysLeft+'d')+' — owed: '+fmt(a.usedCredit||0)});
   });
+  if(!S.dismissedAlerts)S.dismissedAlerts=[];
   var el=ge('dash-alerts');
-  if(el)el.innerHTML=alerts.slice(0,3).map(function(a){
-    var icon=a.type==='danger'?'<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>':'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-    return'<div class="alert-banner '+a.type+'">'+icon+a.msg+'</div>';
+  if(!el)return;
+  var visible=alerts.filter(function(a){return S.dismissedAlerts.indexOf(a.key)===-1;}).slice(0,4);
+  el.innerHTML=visible.map(function(a){
+    var icon=a.type==='danger'
+      ?'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+      :'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+    var dismissBtn='<button class="alert-dismiss" data-key="'+a.key+'" title="Dismiss" style="margin-left:auto;flex-shrink:0;width:22px;height:22px;border-radius:50%;border:none;background:rgba(0,0,0,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;color:currentColor;opacity:0.6;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/></svg></button>';
+    return'<div class="alert-banner '+a.type+'" style="align-items:center">'+icon+'<span style="flex:1">'+a.msg+'</span>'+dismissBtn+'</div>';
   }).join('');
+  // Wire dismiss buttons
+  el.querySelectorAll('.alert-dismiss').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      var key=this.dataset.key;
+      if(S.dismissedAlerts.indexOf(key)===-1)S.dismissedAlerts.push(key);
+      save();
+      this.closest('.alert-banner').style.transition='opacity .2s';
+      this.closest('.alert-banner').style.opacity='0';
+      setTimeout(function(){renderAlerts();},200);
+    });
+  });
 }
 
 // ── NAV ──────────────────────────────────────────────
@@ -3998,7 +4017,7 @@ function renderSubs(){
       var id=this.dataset.id;
       confirmModal('Remove this subscription?',function(){
         S.subscriptions=S.subscriptions.filter(function(s){return String(s.id)!==String(id);});
-        save();renderSubs();toast('Subscription removed.');
+        save();renderSubs();closeModal();toast('Subscription removed.');
       },true);
     });});
     cardEl.querySelectorAll('.sub-pause').forEach(function(btn){btn.addEventListener('click',function(){
@@ -4080,7 +4099,7 @@ function renderBudget(){
     var id=this.dataset.id;
     confirmModal('Remove this budget goal?',function(){
       S.goals=S.goals.filter(function(g){return String(g.id)!==String(id);});
-      save();renderBudget();updateProfileStats();toast('Goal removed.');
+      save();renderBudget();updateProfileStats();closeModal();toast('Goal removed.');
     },true);
   });});
 }
@@ -4783,7 +4802,7 @@ function deleteEntry(type,id){
   renderDash();
   renderAlerts();
   if(type==='credit')renderCCSummary();
-  toast('Entry removed.');
+  closeModal();toast('Entry removed.');
   },true);
 }
 
@@ -5353,7 +5372,7 @@ function renderSavingsGoals(){
       if(!g)return;
       confirmModal('Delete goal <strong>'+g.name+'</strong>? Logged savings entries for this goal will remain.',function(){
         S.savingsGoals=S.savingsGoals.filter(function(x){return String(x.id)!==String(id);});
-        save();renderSavingsGoals();toast('Goal deleted.');
+        save();renderSavingsGoals();closeModal();toast('Goal deleted.');
       },true);
     });
   });
@@ -6148,8 +6167,10 @@ function renderBills(){
           +'<div class="bill-meta">'
             +(b.isPaid?'Paid '+b.paidDate:'Due '+b.dueDate)
             +(accLabel?' · '+accLabel:'')
-            +' <span class="'+st2.cls+'" style="font-size:9px">'+st2.label+'</span>'
-            +' '+recurBadge
+          +'</div>'
+          +'<div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap">'
+            +'<span class="'+st2.cls+'" style="font-size:10px;padding:2px 8px">'+st2.label+'</span>'
+            +recurBadge
           +'</div>'
         +'</div>'
         +'<div class="bill-right">'
@@ -6168,7 +6189,7 @@ function renderBills(){
     var id=this.dataset.id;
     confirmModal('Remove this bill?',function(){
       S.bills=S.bills.filter(function(b){return String(b.id)!==String(id);});
-      save();renderBills();renderAlerts();renderDashBills();toast('Bill removed.');
+      save();renderBills();renderAlerts();renderDashBills();closeModal();toast('Bill removed.');
     },true);
   });});
 }
@@ -6293,6 +6314,7 @@ function payBill(id){
       next.dueDate=nd.toISOString().split('T')[0];
       S.bills.push(next);
     }
+    if(S.dismissedAlerts){S.dismissedAlerts=S.dismissedAlerts.filter(function(k){return k.indexOf('bill-ov-'+b.id)===-1;});}
     save();renderBills();renderAlerts();renderDashBills();renderAccounts();renderDash();
     closeModal();toast('Bill paid ✓ — expense logged','success');
   });
