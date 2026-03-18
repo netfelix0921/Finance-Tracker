@@ -383,7 +383,31 @@ button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
   .search-mob-btn { display: none !important; }
   .topbar-right .search-wrap { display: flex !important; }
 }
+/* ✅ tighten nav buttons */
+.bottom-nav .nav-btn {
+  gap: 0px;
+  padding: 2px 0;
+  font-size: 10px;
+}
 
+/* ✅ fix label spacing */
+.bottom-nav .nav-btn span {
+  margin-top: 0px;
+  line-height: 1;
+}
+
+/* ✅ smaller icons */
+.bottom-nav .nav-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ✅ float center button */
+.nav-center-btn {
+  width: 50px;
+  height: 50px;
+  transform: translateY(-14px);
+}
 /* ═══════════════════════════════════════════════════════════════
    TOPBAR
    ═══════════════════════════════════════════════════════════════ */
@@ -1677,30 +1701,46 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 /* ═══════════════════════════════════════════════════════════════
    BOTTOM NAV BAR
    ═══════════════════════════════════════════════════════════════ */
-/* ── BOTTOM NAV ─────────────────────────────────────────────── */
 .bottom-nav {
-  display: none; /* hidden on desktop */
+  display: none; /* keep for desktop */
+
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  width: 100%;
-  background: rgba(255,255,255,0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border);
+
+  height: auto; /* Change from 52px to auto */
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  border-top: 0.5px solid rgba(0,0,0,0.08);
   z-index: 150;
-  padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
-  flex-shrink: 0;
+
+  /* ✅ FIX: Use padding to create space for the nav items */
+  padding: 8px 0 env(safe-area-inset-bottom);
+  box-sizing: content-box;
 }
-.bn-bar { display: flex; align-items: center; justify-content: space-around; }
+.bn-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 64px 1fr 1fr;
+  align-items: center;
+  justify-items: center;
+  width: 100%;
+  height: 52px; /* Keep the bar height */
+}
 .bn-item {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   cursor: pointer; padding: 3px 6px; border-radius: 10px;
   border: none; background: transparent;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation; transition: background var(--dur-fast);
-  min-width: 44px;
+  width: 100%;
 }
 .bn-item:active { background: var(--bg); }
 .bn-ico { position: relative; display: flex; align-items: center; justify-content: center; }
@@ -1710,15 +1750,13 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
   transition: stroke var(--dur-fast);
 }
-/* Labels hidden by default, only show on active tab */
 .bn-lbl {
-  font-size: 9.5px; font-weight: 500; color: var(--t3);
+  font-size: 9px; font-weight: 500; color: var(--t3);
   font-family: 'Plus Jakarta Sans', sans-serif;
   transition: color var(--dur-fast); white-space: nowrap;
-  display: none;
 }
 .bn-item.active .bn-ico svg { stroke: var(--blue); }
-.bn-item.active .bn-lbl { display: block; color: var(--blue); font-weight: 600; }
+.bn-item.active .bn-lbl { color: var(--blue); font-weight: 600; }
 .bn-item.active .bn-active-dot { display: block; }
 .bn-active-dot {
   display: none; width: 4px; height: 4px;
@@ -1727,16 +1765,24 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 }
 /* Add button — center pill */
 .bn-add {
-  width: 42px; height: 42px; border-radius: 50%;
-  background: var(--blue); border: none; cursor: pointer;
+  width: 56px; /* Slightly larger */
+  height: 56px; /* Slightly larger */
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(99,102,241,1), rgba(14,165,233,1));
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  box-shadow: 0 4px 20px rgba(99,102,241,0.55), 0 2px 6px rgba(0,0,0,0.18);
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  transition: transform var(--dur-fast), box-shadow var(--dur-fast);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), opacity 0.2s;
   flex-shrink: 0;
+  margin-bottom: 0;
+  /* ✅ FIX: Remove transform, use margin-top to create the floating effect */
+  margin-top: -12px;
 }
-.bn-add:active { transform: scale(0.94); box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
-.bn-add svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.bn-add:active { transform: scale(0.92); box-shadow: 0 2px 10px rgba(129,140,248,0.3); }
+.bn-add svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
 /* Badge on bills icon */
 .bn-badge {
   position: absolute; top: -3px; right: -5px;
@@ -1790,25 +1836,39 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 .bn-sheet-ico svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .bn-sheet-lbl { font-size: 11px; font-weight: 500; color: var(--t1); }
 
-/* On mobile: show bottom nav */
+/* On mobile: show bottom nav, hide sidebar, remove topbar ham */
 @media (max-width: 900px) {
   .bottom-nav { display: flex; flex-direction: column; }
-  .content { padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important; }
+  /* Extra bottom padding so content clears the fixed bottom nav */
+  .content { padding-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
 }
-/* Scroll-hide bottom nav — only plus stays */
-.bottom-nav.scrolled .bn-item,
-.bottom-nav.scrolled .bn-bar > :not(.bn-add) {
-  opacity: 0; pointer-events: none; transform: translateY(6px);
-  transition: opacity 0.25s, transform 0.25s;
+/* Transparent bottom nav on scroll — only plus stays ──────── */
+.bottom-nav {
+  transition: background 0.3s, border-color 0.3s, backdrop-filter 0.3s, opacity 0.25s var(--ease), transform 0.3s var(--ease);
+}
+.bottom-nav.scrolled {
+  background: transparent !important;
+  border-top-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.bottom-nav.scrolled .bn-item {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
 }
 .bottom-nav.scrolled .bn-add {
-  transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+  /* ✅ FIX: Remove translateY from transform */
+  transform: scale(1.1);
+  box-shadow: 0 8px 24px rgba(37,99,235,0.5);
 }
-.bn-item, .bn-add {
-  transition: opacity 0.25s, transform 0.25s, background var(--dur-fast), box-shadow var(--dur-fast);
+.bn-item {
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), background var(--dur-fast);
 }
-.bottom-nav { transition: none; }
+.bn-add {
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background var(--dur-fast);
+}
 
 /* Dark mode */
 html[data-theme="dark"] .bottom-nav {
@@ -2147,6 +2207,9 @@ input[type="date"], input[type="number"] {
 .nw-il  { font-size: 9px !important; }
 
 /* ── 20. BOTTOM NAV ── */
+.bn-lbl { font-size: 9.5px !important; }
+.bn-ico svg { width: 20px !important; height: 20px !important; }
+.bn-add { width: 42px !important; height: 42px !important; }
 
 /* ── 21. TOPBAR ── */
 .topbar-title { font-size: 14px !important; font-weight: 600 !important; }
@@ -2266,7 +2329,8 @@ input[type="date"], input[type="number"] {
 .content {
   padding: 16px !important;
   padding-top: calc(46px + env(safe-area-inset-top) + 14px) !important;
-  padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+  /* ✅ FIX: Add enough space for the bottom nav with floating button */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
   flex: 1 !important;
@@ -3183,7 +3247,7 @@ input[type="date"], input[type="number"] {
       <button class="bn-add" id="bn-add-btn" title="Log transaction">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <!-- Bills -->
+      <!-- Plans (Bills + Subs + Budget) -->
       <button class="bn-item" data-panel="bills" id="bn-bills">
         <div class="bn-ico">
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
@@ -3455,7 +3519,7 @@ function renderAlerts(){
 
 // ── NAV ──────────────────────────────────────────────
 var PANELS=['dashboard','networth','accounts','income','expense','transfer','credit','savings','bills','subscriptions','budget','charts','profile'];
-var TITLES={dashboard:'Fintra',networth:'Fintra',accounts:'Fintra',income:'Fintra',expense:'Fintra',transfer:'Fintra',credit:'Fintra',savings:'Fintra',bills:'Fintra',subscriptions:'Fintra',budget:'Fintra',charts:'Fintra',profile:'Fintra'};
+var TITLES={dashboard:'Dashboard',networth:'Net Worth',accounts:'Accounts',income:'Income',expense:'Expenses',transfer:'Transfers',credit:'Credit',savings:'Savings',bills:'Bills',subscriptions:'Subscriptions',budget:'Budget Goals',charts:'Charts',profile:'Profile & Settings'};
 function goPanel(name){
   PANELS.forEach(function(p){ge('panel-'+p).classList.remove('active');});
   ge('panel-'+name).classList.add('active');
