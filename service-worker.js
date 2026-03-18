@@ -30,6 +30,21 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
+//Notification
+self.addEventListener('push', function(event) {
+  const data = event.data?.json() || {};
+
+  const title = data.title || "Fintra";
+  const options = {
+    body: data.body || "New notification",
+    icon: "./icon-192.png"
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
 // Fetch — Network first for HTML (always get latest), cache first for assets
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
