@@ -1679,42 +1679,51 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
    ═══════════════════════════════════════════════════════════════ */
 /* ── BOTTOM NAV ─────────────────────────────────────────────── */
 .bottom-nav {
-  display: none; /* hidden on desktop */
+  display: none;
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   width: 100%;
   background: rgba(255,255,255,0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   z-index: 150;
-  flex-shrink: 0;
+  /* Total height = 54px icons row + safe area. Nothing else. */
+  padding: 0;
+  margin: 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 .bn-bar {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-around;
   width: 100%;
+  /* Fixed icon row height only — safe area is extra space BELOW this */
   height: 54px;
+  box-sizing: border-box;
   padding: 0 4px;
-  padding-bottom: env(safe-area-inset-bottom);
-  box-sizing: content-box;
+}
+/* This pseudo-element fills the safe area below the bar with the nav background */
+.bottom-nav::after {
+  content: '';
+  display: block;
+  height: env(safe-area-inset-bottom);
+  width: 100%;
 }
 .bn-item {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
-  cursor: pointer; padding: 3px 6px; border-radius: 10px;
+  cursor: pointer; padding: 4px 6px; border-radius: 10px;
   border: none; background: transparent;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation; transition: background var(--dur-fast);
-  min-width: 44px;
+  touch-action: manipulation;
+  min-width: 44px; flex: 1;
 }
 .bn-item:active { background: var(--bg); }
 .bn-ico { position: relative; display: flex; align-items: center; justify-content: center; }
 .bn-ico svg {
-  width: 20px; height: 20px;
+  width: 22px; height: 22px;
   stroke: var(--t3); fill: none;
   stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
   transition: stroke var(--dur-fast);
@@ -1723,30 +1732,27 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 .bn-lbl {
   font-size: 9.5px; font-weight: 500; color: var(--t3);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  transition: color var(--dur-fast); white-space: nowrap;
-  display: none;
+  white-space: nowrap; display: none;
+  transition: color var(--dur-fast);
 }
 .bn-item.active .bn-ico svg { stroke: var(--blue); }
 .bn-item.active .bn-lbl { display: block; color: var(--blue); font-weight: 600; }
-.bn-item.active .bn-active-dot { display: block; }
-.bn-active-dot {
-  display: none; width: 4px; height: 4px;
-  border-radius: 50%; background: var(--blue);
-  margin-top: -1px;
-}
-/* Add button — center pill */
+.bn-active-dot { display: none; }
+
+/* Add button */
 .bn-add {
-  width: 42px; height: 42px; border-radius: 50%;
+  width: 44px; height: 44px; border-radius: 50%;
   background: var(--blue); border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 14px rgba(37,99,235,0.35);
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  transition: transform var(--dur-fast), box-shadow var(--dur-fast);
   flex-shrink: 0;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
 }
 .bn-add:active { transform: scale(0.94); box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
-.bn-add svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
-/* Badge on bills icon */
+.bn-add svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+/* Badge */
 .bn-badge {
   position: absolute; top: -3px; right: -5px;
   width: 8px; height: 8px; border-radius: 50%;
@@ -1773,15 +1779,8 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   transition: transform var(--dur-slow) var(--ease);
 }
 .bn-sheet.open { transform: translateY(0); }
-.bn-sheet-handle {
-  width: 36px; height: 4px; border-radius: 2px;
-  background: var(--t4); margin: 12px auto 16px;
-}
-.bn-sheet-title {
-  font-size: 12px; font-weight: 500; color: var(--t3);
-  text-transform: uppercase; letter-spacing: .06em;
-  text-align: center; margin-bottom: 14px;
-}
+.bn-sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--t4); margin: 12px auto 16px; }
+.bn-sheet-title { font-size: 12px; font-weight: 500; color: var(--t3); text-transform: uppercase; letter-spacing: .06em; text-align: center; margin-bottom: 14px; }
 .bn-sheet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .bn-sheet-btn {
   display: flex; flex-direction: column; align-items: center; gap: 7px;
@@ -1792,38 +1791,36 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   transition: all var(--dur-fast);
 }
 .bn-sheet-btn:active { transform: scale(0.96); }
-.bn-sheet-ico {
-  width: 42px; height: 42px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-}
+.bn-sheet-ico { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
 .bn-sheet-ico svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .bn-sheet-lbl { font-size: 11px; font-weight: 500; color: var(--t1); }
 
 /* On mobile: show bottom nav */
 @media (max-width: 900px) {
-  .bottom-nav { display: flex; flex-direction: row; }
-  .content { padding-bottom: calc(54px + env(safe-area-inset-bottom) + 8px) !important; }
+  .bottom-nav { display: flex; flex-direction: column; }
+  .content { padding-bottom: calc(54px + env(safe-area-inset-bottom)) !important; }
 }
-/* Scroll-hide bottom nav — only plus stays */
-.bottom-nav.scrolled .bn-item,
-.bottom-nav.scrolled .bn-bar > :not(.bn-add) {
+
+/* Scroll: hide everything except + button, remove background */
+.bn-item { transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), background var(--dur-fast); }
+.bn-add  { transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease); }
+.bottom-nav.scrolled {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top-color: transparent !important;
+}
+.bottom-nav.scrolled::after { display: none; }
+.bottom-nav.scrolled .bn-item {
   opacity: 0; pointer-events: none; transform: translateY(6px);
-  transition: opacity 0.25s, transform 0.25s;
 }
 .bottom-nav.scrolled .bn-add {
-  transform: scale(1.08);
+  transform: scale(1.1);
   box-shadow: 0 6px 20px rgba(37,99,235,0.45);
 }
-.bn-item, .bn-add {
-  transition: opacity 0.25s, transform 0.25s, background var(--dur-fast), box-shadow var(--dur-fast);
-}
-.bottom-nav { transition: none; }
 
 /* Dark mode */
-html[data-theme="dark"] .bottom-nav {
-  background: rgba(19,23,32,0.96);
-  border-top-color: var(--border);
-}
+html[data-theme="dark"] .bottom-nav { background: rgba(19,23,32,0.96); border-top-color: var(--border); }
 html[data-theme="dark"] .bn-sheet { background: var(--surface); }
 html[data-theme="dark"] .bn-sheet-btn { background: var(--bg); border-color: var(--border); }
 
@@ -1973,7 +1970,7 @@ html[data-theme="dark"] .bn-sheet-btn { background: var(--bg); border-color: var
 
 /* ── 1. SCROLL FIX: content never hidden behind bottom nav ── */
 .content {
-  padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
 }
 @media(min-width:901px) {
   /* desktop: no bottom nav */
@@ -2213,7 +2210,7 @@ input[type="date"], input[type="number"] {
 /* Content padding — same tight value everywhere */
 .content {
   padding: 16px !important;
-  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
 }
 @media(min-width:901px) {
   .content { padding: 20px !important; padding-bottom: 20px !important; }
@@ -2275,7 +2272,7 @@ input[type="date"], input[type="number"] {
 .content {
   padding: 16px !important;
   padding-top: calc(46px + env(safe-area-inset-top) + 14px) !important;
-  padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: calc(54px + env(safe-area-inset-bottom)) !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
   flex: 1 !important;
