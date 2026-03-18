@@ -1712,7 +1712,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 }
 /* Labels hidden by default, only show on active tab */
 .bn-lbl {
-  font-size: 9px; font-weight: 500; color: var(--t3);
+  font-size: 9.5px; font-weight: 500; color: var(--t3);
   font-family: 'Plus Jakarta Sans', sans-serif;
   transition: color var(--dur-fast); white-space: nowrap;
   display: none;
@@ -1725,22 +1725,18 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   border-radius: 50%; background: var(--blue);
   margin-top: -1px;
 }
-/* Add button */
+/* Add button — center pill */
 .bn-add {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: linear-gradient(135deg, rgba(99,102,241,1), rgba(14,165,233,1));
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(255,255,255,0.35);
-  cursor: pointer;
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--blue); border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 20px rgba(99,102,241,0.55), 0 2px 6px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), opacity 0.2s;
+  transition: transform var(--dur-fast), box-shadow var(--dur-fast);
   flex-shrink: 0;
-  margin-bottom: 4px;
 }
-.bn-add:active { transform: scale(0.92); box-shadow: 0 2px 10px rgba(129,140,248,0.3); }
-.bn-add svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.bn-add:active { transform: scale(0.94); box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
+.bn-add svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
 /* Badge on bills icon */
 .bn-badge {
   position: absolute; top: -3px; right: -5px;
@@ -1799,32 +1795,20 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   .bottom-nav { display: flex; flex-direction: column; }
   .content { padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important; }
 }
-/* Transparent bottom nav on scroll — only plus stays */
-.bottom-nav {
-  transition: background 0.3s, border-color 0.3s, backdrop-filter 0.3s;
-}
-.bottom-nav.scrolled {
-  background: transparent !important;
-  border-top-color: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-.bottom-nav.scrolled .bn-item {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+/* Scroll-hide bottom nav — only plus stays */
+.bottom-nav.scrolled .bn-item,
+.bottom-nav.scrolled .bn-bar > :not(.bn-add) {
+  opacity: 0; pointer-events: none; transform: translateY(6px);
+  transition: opacity 0.25s, transform 0.25s;
 }
 .bottom-nav.scrolled .bn-add {
-  transform: scale(1.1);
-  box-shadow: 0 8px 24px rgba(37,99,235,0.5);
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.45);
 }
-.bn-item {
-  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), background var(--dur-fast);
+.bn-item, .bn-add {
+  transition: opacity 0.25s, transform 0.25s, background var(--dur-fast), box-shadow var(--dur-fast);
 }
-.bn-add {
-  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background var(--dur-fast);
-}
+.bottom-nav { transition: none; }
 
 /* Dark mode */
 html[data-theme="dark"] .bottom-nav {
@@ -1980,7 +1964,7 @@ html[data-theme="dark"] .bn-sheet-btn { background: var(--bg); border-color: var
 
 /* ── 1. SCROLL FIX: content never hidden behind bottom nav ── */
 .content {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px)) !important;
+  padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
 }
 @media(min-width:901px) {
   /* desktop: no bottom nav */
@@ -2220,7 +2204,7 @@ input[type="date"], input[type="number"] {
 /* Content padding — same tight value everywhere */
 .content {
   padding: 16px !important;
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px)) !important;
+  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
 }
 @media(min-width:901px) {
   .content { padding: 20px !important; padding-bottom: 20px !important; }
@@ -2282,7 +2266,7 @@ input[type="date"], input[type="number"] {
 .content {
   padding: 16px !important;
   padding-top: calc(46px + env(safe-area-inset-top) + 14px) !important;
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px)) !important;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
   flex: 1 !important;
@@ -2293,6 +2277,7 @@ input[type="date"], input[type="number"] {
   .content {
     padding: 24px 28px !important;
     padding-top: calc(46px + env(safe-area-inset-top) + 24px) !important;
+    /* ✅ FIX: On desktop, no bottom nav, so less padding */
     padding-bottom: 24px !important;
   }
 }
@@ -3198,7 +3183,7 @@ input[type="date"], input[type="number"] {
       <button class="bn-add" id="bn-add-btn" title="Log transaction">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <!-- Plans (Bills + Subs + Budget) -->
+      <!-- Bills -->
       <button class="bn-item" data-panel="bills" id="bn-bills">
         <div class="bn-ico">
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
