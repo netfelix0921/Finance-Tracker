@@ -107,6 +107,9 @@
 
 html, body {
   height: 100%;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   font-family: 'Plus Jakarta Sans', 'Helvetica Neue', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -133,7 +136,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
 /* ═══════════════════════════════════════════════════════════════
    APP SHELL
    ═══════════════════════════════════════════════════════════════ */
-.app { display: flex; height: 100vh; overflow: hidden; background: var(--bg); }
+.app { display: flex; height: 100vh; overflow: hidden; background: var(--bg); width: 100%; max-width: 100vw; }
 
 /* ═══════════════════════════════════════════════════════════════
    SIDEBAR
@@ -491,7 +494,8 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
    CONTENT AREA
    ═══════════════════════════════════════════════════════════════ */
 .content {
-  flex: 1; overflow-y: auto;
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  width: 100%; max-width: 100%;
   padding: 18px 20px;
   padding-top: calc(50px + env(safe-area-inset-top) + 16px);
   padding-bottom: calc(18px + env(safe-area-inset-bottom));
@@ -1398,6 +1402,21 @@ select option { background: var(--surface); }
   .search-mob-bar.show { display: flex !important; align-items: center; }
   .krow { grid-template-columns: 1fr 1fr; }
   .content { padding: 16px 18px; }
+}
+
+/* ── GLOBAL HORIZONTAL SCROLL LOCK (mobile) ── */
+@media (max-width: 900px) {
+  html, body { overflow-x: hidden !important; }
+  .content > * { max-width: 100%; box-sizing: border-box; }
+  .card, .bcard, .kpi, .gcard, .mob-card, .fcard, .nw-card,
+  .bill-card, .sub-card, .sg-card, .icard, .wid, .modal {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  img, canvas, svg, video, iframe {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 @media (max-width: 600px) {
@@ -3383,11 +3402,11 @@ function goPanel(name){
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   var btn=document.querySelector('.nav-btn[data-panel="'+name+'"]');if(btn)btn.classList.add('active');
   st('topbar-title',TITLES[name]||name);
-  // Hide topbar on all panels except dashboard
+  // Always show topbar on all panels
   var tb=document.querySelector('.topbar');
-  if(tb){tb.classList.toggle('tb-hidden',name!=='dashboard');}
+  if(tb){tb.classList.remove('tb-hidden');}
   var cont2=document.querySelector('.content');
-  if(cont2){cont2.classList.toggle('no-topbar',name!=='dashboard');}
+  if(cont2){cont2.classList.remove('no-topbar');}
   // Reset scroll state when switching panels
   var bn=ge('bottom-nav');if(bn)bn.classList.remove('scrolled');
   var cont=document.querySelector('.content');if(cont)cont.scrollTop=0;
