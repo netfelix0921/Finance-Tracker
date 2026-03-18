@@ -115,12 +115,10 @@ html, body {
   font-size: 13px;
   line-height: 1.5;
   font-weight: 400;
-  overflow-x: hidden;
-  max-width: 100vw;
 }
 
 /* ── iOS PWA TOUCH FIX ── */
-button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
+button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close,
 .ham-btn,.search-mob-btn,.sr-item,.mob-del,.mob-edit,.mob-pay,.mob-sub-pause,
 .mob-sub-skip,.mob-del-sub,.bill-pay-btn,.bill-edit-btn,.bill-del-btn,
 .btn-add,.btn-ghost,.btn-save,.btn-danger,.btn-icon,.btn-pay,.bdel,.bedit,
@@ -135,7 +133,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
 /* ═══════════════════════════════════════════════════════════════
    APP SHELL
    ═══════════════════════════════════════════════════════════════ */
-.app { display: flex; height: 100vh; overflow: hidden; background: var(--bg); width: 100%; max-width: 100vw; }
+.app { display: flex; height: 100vh; overflow: hidden; background: var(--bg); }
 
 /* ═══════════════════════════════════════════════════════════════
    SIDEBAR
@@ -149,7 +147,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
   border-left: 1px solid rgba(255,255,255,0.6);
   display: flex;
   flex-direction: column;
-  transition: transform var(--dur-slow) var(--ease);
+  transition: right var(--dur-slow) var(--ease);
   overflow: hidden;
   padding-top: env(safe-area-inset-top);
   position: relative;
@@ -333,7 +331,6 @@ button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
   flex: 1; display: flex; flex-direction: column;
   overflow: hidden; min-width: 0;
   background: var(--bg);
-  width: 0; /* force flex child to not grow beyond container */
 }
 /* Desktop — sidebar always visible, content offset ────────── */
 @media (min-width: 901px) {
@@ -362,8 +359,9 @@ button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
   .sidebar-overlay { display: none !important; }
   .topbar {
     left: 240px !important;
+    background: rgba(255,255,255,0.96) !important;
   }
-  .topbar-left { flex: 1; min-width: 0; }
+  .topbar-logo { display: none !important; }
   .bottom-nav { display: none !important; }
   .content {
     padding-top: calc(50px + env(safe-area-inset-top) + 16px) !important;
@@ -405,34 +403,21 @@ button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
 .topbar.hide { transform: translateY(-100%); }
 .topbar.tb-hidden { transform: translateY(-100%); pointer-events: none; }
 .topbar-left { display: flex; align-items: center; gap: 0; min-width: 0; }
-/* Logo icon always visible in topbar on all panels/sizes */
 .topbar-logo {
-  display: flex; align-items: center;
-  cursor: pointer; user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
-  margin-right: 10px;
+  display: flex; align-items: center; gap: 9px;
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
 }
-.topbar-title {
-  display: block;
-  font-size: 18px;       /* 🔥 bigger */
-  font-weight: 700;      /* stronger */
-  color: var(--t1);
-  letter-spacing: -0.3px;
+.topbar-brand {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px; font-weight: 700; letter-spacing: -0.5px;
+  color: var(--t1); line-height: 1;
 }
-
+.topbar-title { display: none; }
 @media(min-width:901px){
-  .topbar-title {
-    display: block;
-    font-size: 18px;     /* keep same size */
-    font-weight: 700;
-    color: var(--t1);
-    letter-spacing: -0.3px;
-  }
+  .topbar-title { display: block; font-size:14px; font-weight:600; color:var(--t1); letter-spacing:-0.2px; }
+  .topbar-logo { display: none; }
 }
-/* Logo icon always visible; title always visible next to it */
-.topbar-logo { transition: opacity var(--dur-fast); }
-.topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.topbar-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 
 /* Panel hero header — replaces .ph on accounts/bills/profile ──────── */
 .panel-hero {
@@ -561,14 +546,12 @@ button,.nav-btn,.pchip,.df-btn,.bft,.tb-btn,.tb-chip,.wlink,.modal-close,
    CONTENT AREA
    ═══════════════════════════════════════════════════════════════ */
 .content {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
+  flex: 1; overflow-y: auto;
   padding: 18px 20px;
   padding-top: calc(50px + env(safe-area-inset-top) + 16px);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
   -webkit-overflow-scrolling: touch;
   transition: padding-top 0.3s var(--ease);
-  width: 100%;
-  box-sizing: border-box;
 }
 .content.no-topbar {
   padding-top: calc(env(safe-area-inset-top) + 16px);
@@ -1224,7 +1207,6 @@ select option { background: var(--surface); }
   transform: translateX(-50%) translateY(16px);
   background: var(--t1); color: #fff; padding: 10px 20px; border-radius: 999px;
   font-size: 13px; font-weight: 500; white-space: nowrap;
-  max-width: calc(100vw - 32px); white-space: normal; text-align: center;
   pointer-events: none; opacity: 0; z-index: 9999;
   box-shadow: var(--sh-xl); transition: all var(--dur-med) var(--ease-out); letter-spacing: -.1px;
 }
@@ -1461,13 +1443,14 @@ select option { background: var(--surface); }
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 900px) {
-  .sidebar { position: fixed; top: calc(50px + env(safe-area-inset-top)); right: 0; left: auto; height: calc(100% - 50px - env(safe-area-inset-top)); z-index: 100; box-shadow: var(--sh-xl); padding-top: 0; transform: translateX(100%); transition: transform var(--dur-slow) var(--ease); }
-  .sidebar.open { transform: translateX(0); }
+  .sidebar { position: fixed; top: calc(50px + env(safe-area-inset-top)); right: -260px; left: auto; height: calc(100% - 50px - env(safe-area-inset-top)); z-index: 100; box-shadow: var(--sh-xl); padding-top: 0; }
+  .sidebar.open { right: 0; }
   .ham-btn { display: flex; }
   .search-wrap { display: none; }
   .search-mob-btn { display: flex; }
   .search-mob-bar.show { display: flex !important; align-items: center; }
   .search-mob-bar.open { display: flex !important; align-items: center; }
+  .search-mob-bar.show { display: flex !important; align-items: center; }
   .krow { grid-template-columns: 1fr 1fr; }
   .content { padding: 16px 18px; }
 }
@@ -1677,7 +1660,6 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 /* ═══════════════════════════════════════════════════════════════
    BOTTOM NAV BAR
    ═══════════════════════════════════════════════════════════════ */
-/* ── BOTTOM NAV ─────────────────────────────────────────────── */
 .bottom-nav {
   display: none; /* hidden on desktop */
   position: fixed;
@@ -1710,7 +1692,6 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
   transition: stroke var(--dur-fast);
 }
-/* Labels hidden by default, only show on active tab */
 .bn-lbl {
   font-size: 9px; font-weight: 500; color: var(--t3);
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -1725,7 +1706,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   border-radius: 50%; background: var(--blue);
   margin-top: -1px;
 }
-/* Add button */
+/* Add button — center pill */
 .bn-add {
   width: 52px; height: 52px; border-radius: 50%;
   background: linear-gradient(135deg, rgba(99,102,241,1), rgba(14,165,233,1));
@@ -1794,12 +1775,13 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 .bn-sheet-ico svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .bn-sheet-lbl { font-size: 11px; font-weight: 500; color: var(--t1); }
 
-/* On mobile: show bottom nav */
+/* On mobile: show bottom nav, hide sidebar, remove topbar ham */
 @media (max-width: 900px) {
   .bottom-nav { display: flex; flex-direction: column; }
+  /* Extra bottom padding so content clears the fixed bottom nav */
   .content { padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important; }
 }
-/* Transparent bottom nav on scroll — only plus stays */
+/* Transparent bottom nav on scroll — only plus stays ──────── */
 .bottom-nav {
   transition: background 0.3s, border-color 0.3s, backdrop-filter 0.3s;
 }
@@ -2163,6 +2145,9 @@ input[type="date"], input[type="number"] {
 .nw-il  { font-size: 9px !important; }
 
 /* ── 20. BOTTOM NAV ── */
+.bn-lbl { font-size: 9.5px !important; }
+.bn-ico svg { width: 20px !important; height: 20px !important; }
+.bn-add { width: 42px !important; height: 42px !important; }
 
 /* ── 21. TOPBAR ── */
 .topbar-title { font-size: 14px !important; font-weight: 600 !important; }
@@ -2288,7 +2273,6 @@ input[type="date"], input[type="number"] {
   flex: 1 !important;
   max-width: 100% !important;
 }
-
 @media(min-width:901px) {
   .content {
     padding: 24px 28px !important;
@@ -2313,65 +2297,42 @@ input[type="date"], input[type="number"] {
 
 
 /* ═══════════════════════════════════════════════════════
-   SAVINGS GOALS — Compact card style
+   SAVINGS GOALS
    ═══════════════════════════════════════════════════════ */
-.sg-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:10px; }
-.sg-card {
-  padding:12px 14px;
-  border-radius:var(--r-md);
-  background:var(--surface);
-  box-shadow:var(--sh-sm);
-  position:relative;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.sg-card-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.sg-card-ico { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.sg-card-ico svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.sg-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:10px; }
+.sg-card { padding:18px 20px; border-radius:var(--r-lg); background:var(--surface); box-shadow:var(--sh-sm); position:relative; overflow:hidden; }
+.sg-card-head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+.sg-card-ico { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:10px; }
+.sg-card-ico svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
 .sg-card-info { flex:1; min-width:0; }
-.sg-card-name { font-size:13px; font-weight:600; color:var(--t1); letter-spacing:-.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.sg-card-sub  { font-size:10px; color:var(--t3); margin-top:1px; }
-.sg-card-actions { display:flex; gap:2px; flex-shrink:0; }
-.sg-card-btn { width:24px; height:24px; border-radius:6px; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--t3); transition:all var(--dur-fast); }
+.sg-card-name { font-size:14px; font-weight:600; color:var(--t1); letter-spacing:-.2px; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sg-card-sub  { font-size:11px; color:var(--t3); }
+.sg-card-actions { display:flex; gap:4px; flex-shrink:0; margin-left:8px; }
+.sg-card-btn { width:26px; height:26px; border-radius:var(--r-sm); border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--t3); transition:all var(--dur-fast); }
 .sg-card-btn:hover { background:var(--bg); color:var(--t1); }
-.sg-card-btn svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:1.75; stroke-linecap:round; }
-/* Amounts row — inline compact */
-.sg-amounts { display:flex; align-items:baseline; gap:5px; }
-.sg-saved { font-family:'DM Mono',monospace; font-size:16px; font-weight:500; letter-spacing:-0.5px; line-height:1; }
-.sg-target { font-size:11px; color:var(--t3); }
-/* Progress */
-.sg-prog-track { height:5px; background:var(--bg-2); border-radius:999px; overflow:hidden; }
+.sg-card-btn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:1.75; stroke-linecap:round; }
+.sg-amounts { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
+.sg-saved { font-family:'DM Mono',monospace; font-size:22px; font-weight:400; letter-spacing:-1px; line-height:1; }
+.sg-target { font-size:12px; color:var(--t3); }
+.sg-prog-track { height:7px; background:var(--bg-2); border-radius:999px; overflow:hidden; margin-bottom:8px; }
 .sg-prog-fill  { height:100%; border-radius:999px; transition:width 1s cubic-bezier(.16,1,.3,1); }
 .sg-prog-done  { background:var(--green) !important; }
-/* Footer row */
 .sg-card-footer { display:flex; justify-content:space-between; align-items:center; }
-.sg-pct   { font-size:10px; font-weight:600; }
-.sg-meta  { font-size:10px; color:var(--t3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px; }
-/* Deadline chip — compact */
-.sg-deadline-chip { display:inline-flex; align-items:center; gap:3px; font-size:9.5px; font-weight:500; padding:2px 7px; border-radius:999px; background:var(--bg-2); color:var(--t3); }
+.sg-pct   { font-size:11px; font-weight:600; }
+.sg-meta  { font-size:10.5px; color:var(--t3); }
+.sg-deadline-chip { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:500; padding:2px 8px; border-radius:999px; background:var(--bg-2); color:var(--t3); margin-top:6px; }
 .sg-deadline-chip.urgent { background:var(--red-s); color:var(--red); }
 .sg-deadline-chip.close  { background:var(--amber-s); color:var(--amber); }
 .sg-deadline-chip.done   { background:var(--green-s); color:var(--green); }
-.sg-monthly-hint { font-size:10px; color:var(--t3); }
+.sg-monthly-hint { font-size:10.5px; color:var(--t3); margin-top:5px; }
 .sg-monthly-hint strong { color:var(--blue); }
 .sg-empty { padding:32px 20px; text-align:center; color:var(--t3); font-size:13px; }
 .sg-empty-ico { font-size:32px; margin-bottom:10px; opacity:.4; }
-/* Log button — compact ghost, appears on hover/tap only */
-.sg-log-btn { width:100%; padding:5px; border-radius:var(--r-sm); border:1px dashed var(--border2); background:transparent; color:var(--blue); font-size:11px; font-weight:500; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; transition:all var(--dur-fast); margin-top:2px; }
+.sg-log-btn { width:100%; margin-top:12px; padding:7px; border-radius:var(--r-sm); border:1.5px dashed var(--border2); background:transparent; color:var(--blue); font-size:12px; font-weight:500; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; transition:all var(--dur-fast); }
 .sg-log-btn:hover { background:var(--blue-s); border-color:rgba(37,99,235,.3); }
 
 
 /* ── BULK SELECT ── */
-
-/* ── RESPONSIVE: prevent any child from causing horizontal scroll ── */
-@media (max-width: 900px) {
-  .content > * { max-width: 100%; }
-  .card, .bcard, .kpi, .sg-card, .gcard, .bill-card, .mob-card { max-width: 100%; box-sizing: border-box; }
-  .fr, .fr3, .fa { flex-wrap: wrap; }
-  table { display: block; overflow-x: auto; max-width: 100%; }
-}
 
 
 
@@ -2479,8 +2440,7 @@ input[type="date"], input[type="number"] {
 <div class="main">
   <div class="topbar">
     <div class="topbar-left">
-      <!-- Logo icon — always visible, clicking goes to dashboard -->
-      <div class="topbar-logo" onclick="goPanel('dashboard')" title="Dashboard">
+      <div class="topbar-logo" onclick="goPanel('dashboard')">
         <svg width="28" height="28" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="tb-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0A0618"/><stop offset="100%" stop-color="#120D30"/></linearGradient>
@@ -2495,15 +2455,16 @@ input[type="date"], input[type="number"] {
           </g>
           <rect x="52" y="-8" width="14" height="130" rx="7" fill="url(#tb-sl)" transform="rotate(30 55 55)" clip-path="url(#tb-clip)" opacity="0.95"/>
         </svg>
+        <span class="topbar-brand">Fintra</span>
       </div>
-      <span class="topbar-title" id="topbar-title">Fintra</span>
     </div>
     <div class="topbar-right">
       <button class="tb-btn search-mob-btn" id="search-mob-btn" title="Search">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
       </button>
       <div class="tb-chip tb-chip-hide" id="date-badge"></div>
-      <button class="tb-btn ham-btn" id="ham-btn" title="Menu">
+      <div id="spill" style="display:none"></div>
+      <button class="tb-btn" id="ham-btn" title="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <div id="av-topbar" style="display:none!important;width:0!important;overflow:hidden!important"><span id="av-topbar-initial">Y</span></div>
@@ -3331,6 +3292,8 @@ function loadState(){
 function save(){
   try{
     localStorage.setItem(SK,JSON.stringify(S));
+    var el=ge('spill');
+    if(el){el.textContent='saved ✓';el.className='tb-chip ok';setTimeout(function(){el.textContent='auto-save on';el.className='tb-chip';},2000);}
   }catch(e){toast('⚠ Save failed — storage may be full.','error');}
 }
 S=loadState();
@@ -3470,18 +3433,18 @@ function renderAlerts(){
 
 // ── NAV ──────────────────────────────────────────────
 var PANELS=['dashboard','networth','accounts','income','expense','transfer','credit','savings','bills','subscriptions','budget','charts','profile'];
-var TITLES={dashboard:'Fintra',networth:'Fintra',accounts:'Fintra',income:'Fintra',expense:'Fintra',transfer:'Fintra',credit:'Fintra',savings:'Fintra',bills:'Fintra',subscriptions:'Fintra',budget:'Fintra',charts:'Fintra',profile:'Fintra'};
+var TITLES={dashboard:'Dashboard',networth:'Net Worth',accounts:'Accounts',income:'Income',expense:'Expenses',transfer:'Transfers',credit:'Credit',savings:'Savings',bills:'Bills',subscriptions:'Subscriptions',budget:'Budget Goals',charts:'Charts',profile:'Profile & Settings'};
 function goPanel(name){
   PANELS.forEach(function(p){ge('panel-'+p).classList.remove('active');});
   ge('panel-'+name).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   var btn=document.querySelector('.nav-btn[data-panel="'+name+'"]');if(btn)btn.classList.add('active');
   st('topbar-title',TITLES[name]||name);
-  // Topbar always visible
+  // Hide topbar on all panels except dashboard
   var tb=document.querySelector('.topbar');
-  if(tb){tb.classList.remove('tb-hidden');}
+  if(tb){tb.classList.toggle('tb-hidden',name!=='dashboard');}
   var cont2=document.querySelector('.content');
-  if(cont2){cont2.classList.remove('no-topbar');}
+  if(cont2){cont2.classList.toggle('no-topbar',name!=='dashboard');}
   // Reset scroll state when switching panels
   var bn=ge('bottom-nav');if(bn)bn.classList.remove('scrolled');
   var cont=document.querySelector('.content');if(cont)cont.scrollTop=0;
@@ -3589,8 +3552,8 @@ ge('go-charts').addEventListener('click',function(){goPanel('charts');});
 
 // ── SIDEBAR ──────────────────────────────────────────────
 var _sideOpen=false;
-function openSidebar(){_sideOpen=true;ge('sidebar').classList.add('open');ge('ham-btn').classList.add('open');ge('sidebar-overlay').classList.add('show');var bn=ge('bottom-nav');if(bn){bn.style.opacity='0';bn.style.pointerEvents='none';bn.style.transform='translateY(100%)';}}
-function closeSidebar(){_sideOpen=false;ge('sidebar').classList.remove('open');ge('ham-btn').classList.remove('open');ge('sidebar-overlay').classList.remove('show');var bn=ge('bottom-nav');if(bn){bn.style.opacity='';bn.style.pointerEvents='';bn.style.transform='';} }
+function openSidebar(){_sideOpen=true;ge('sidebar').classList.add('open');ge('ham-btn').classList.add('open');ge('sidebar-overlay').classList.add('show');}
+function closeSidebar(){_sideOpen=false;ge('sidebar').classList.remove('open');ge('ham-btn').classList.remove('open');ge('sidebar-overlay').classList.remove('show');}
 ge('ham-btn').addEventListener('click',function(){_sideOpen?closeSidebar():openSidebar();});
 
 // ── SCROLL-HIDE BOTTOM NAV ──────────────────────────────
@@ -6113,44 +6076,41 @@ function renderSavingsGoals(){
       var fillCol=isDone?'var(--green)':col.fill;
 
       return'<div class="sg-card">'
-        // ── Head: icon + name + actions ──
         +'<div class="sg-card-head">'
           +'<div class="sg-card-ico" style="background:'+col.bg+';color:'+col.text+'">'
-            +'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>'
+            +'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>'
           +'</div>'
           +'<div class="sg-card-info">'
             +'<div class="sg-card-name">'+escHtml(g.name)+'</div>'
-            +(g.note?'<div class="sg-card-sub">'+escHtml(g.note)+'</div>':'')
+            +(g.note?'<div class="sg-card-sub">'+g.note+'</div>':'')
           +'</div>'
           +'<div class="sg-card-actions">'
-            +'<button class="sg-card-btn sg-log-trigger" data-goal="'+escHtml(g.name)+'" title="Log"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg></button>'
-            +'<button class="sg-card-btn sg-edit-btn" data-id="'+g.id+'" title="Edit"><svg viewBox="0 0 16 16"><path d="M11 2.5l2.5 2.5L5 13.5H2.5V11L11 2.5z"/></svg></button>'
-            +'<button class="sg-card-btn sg-del-btn" data-id="'+g.id+'" title="Delete"><svg viewBox="0 0 16 16"><polyline points="2.5,4 4,4 13.5,4"/><path d="M5.5 4V2.5h5V4"/><path d="M4 4l1 9.5h6L12 4"/></svg></button>'
+            +'<button class="sg-card-btn sg-log-trigger" data-goal="'+g.name+'" title="Log deposit/withdrawal"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg></button>'
+            +'<button class="sg-card-btn sg-edit-btn" data-id="'+g.id+'" title="Edit goal"><svg viewBox="0 0 16 16"><path d="M11 2.5l2.5 2.5L5 13.5H2.5V11L11 2.5z"/></svg></button>'
+            +'<button class="sg-card-btn sg-del-btn" data-id="'+g.id+'" title="Delete goal"><svg viewBox="0 0 16 16"><polyline points="2.5,4 4,4 13.5,4"/><path d="M5.5 4V2.5h5V4"/><path d="M4 4l1 9.5h6L12 4"/></svg></button>'
           +'</div>'
         +'</div>'
-        // ── Amounts ──
         +'<div class="sg-amounts">'
           +'<span class="sg-saved" style="color:'+col.text+'">'+fmt(saved)+'</span>'
           +(hasTarget?'<span class="sg-target">of '+fmt(g.target)+'</span>':'<span class="sg-target">saved</span>')
         +'</div>'
-        // ── Progress bar ──
-        +(hasTarget?'<div class="sg-prog-track"><div class="sg-prog-fill'+(isDone?' sg-prog-done':'')+'" style="width:0%;background:'+fillCol+'" data-w="'+pct+'%"></div></div>':'')
-        // ── Footer: pct + account ──
+        +(hasTarget
+          ?'<div class="sg-prog-track"><div class="sg-prog-fill'+(isDone?' sg-prog-done':'')+'" style="width:0%;background:'+fillCol+'" data-w="'+pct+'%"></div></div>'
+          :'')
         +'<div class="sg-card-footer">'
           +(hasTarget
             ?'<span class="sg-pct" style="color:'+col.text+'">'+pct+'%'+(isDone?' ✓':'')+'</span>'
-            :'<span class="sg-pct" style="color:var(--t3)">No target</span>')
+            :'<span class="sg-pct" style="color:var(--t3)">No target set</span>')
           +(function(){
-              var acc=g.account?findAcc(g.account):null;
-              if(!acc)return'<span class="sg-meta">No account</span>';
-              return'<span class="sg-meta">'+escHtml(acc.name)+'</span>';
-            }())
+        var acc=g.account?findAcc(g.account):null;
+        if(!acc) return '<span class="sg-meta" style="color:var(--t3)">No linked account</span>';
+        return '<span class="sg-meta">'+acc.name+' · <span style="color:var(--t2);font-family:DM Mono,monospace">'+fmt(acc.balance)+'</span></span>';
+      }())
+      +renderSavingsGoalSync(g)
         +'</div>'
-        // ── Deadline chip ──
         +deadlineHtml
         +monthlyHint
-        // ── Log button ──
-        +'<button class="sg-log-btn sg-log-trigger" data-goal="'+escHtml(g.name)+'">+ Log deposit / withdrawal</button>'
+        +'<button class="sg-log-btn sg-log-trigger" data-goal="'+g.name+'">+ Log deposit / withdrawal</button>'
         +'</div>';
     }).join('')
     +'</div>';
@@ -6907,7 +6867,7 @@ var BILL_CATS=[
   {name:'Insurance',stroke:'#059669',color:'rgba(14,168,96,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5L2 4v4c0 3.5 2.5 6 6 7 3.5-1 6-3.5 6-7V4L8 1.5z"/><polyline points="5,8 7,10 11,6"/></svg>'},
   {name:'Loan',stroke:'#2563EB',color:'rgba(59,107,255,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="5" width="13" height="9" rx="1.5"/><path d="M5 5V3.5A1.5 1.5 0 0 1 6.5 2h3A1.5 1.5 0 0 1 11 3.5V5"/><line x1="8" y1="8.5" x2="8" y2="11.5"/><line x1="6.5" y1="10" x2="9.5" y2="10"/></svg>'},
   {name:'TV/Cable',stroke:'#D97706',color:'rgba(217,119,6,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="13" height="9" rx="1.5"/><line x1="5" y1="14" x2="11" y2="14"/><line x1="8" y1="12" x2="8" y2="14"/></svg>'},
-  {name:'Other',stroke:'#6B7280',color:'rgba(142,146,184,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="8.5"/><line x1="8" y1="10.5" x2="8" y2="11.5"/></svg>'}
+  {name:'Other',stroke:'#6B7280',color:'rgba(142,146,184,0.12)',icon:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="8.5"/><line x1="8" y1="10.5" x2="8" y2="11.5"/></svg>'}
 ];
 
 function billCatInfo(cat){
@@ -7861,15 +7821,16 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('./service-worker.js')
       .then(function(reg) { console.log('Service Worker registered', reg); })
-      .catch(function(err) { console.error('Service Worker registration failed', err); });
+      .catch(function(err) {
+        console.error('Service Worker failed', err);
+        // Notify user that offline/PWA mode is unavailable
+        toast('⚠ Offline mode unavailable — app will not work without internet.', 'error');
+      });
   });
+} else {
+  // Browser doesn't support service workers at all
+  console.warn('Service Worker not supported in this browser.');
 }
-
-// ── NETWORK STATUS ──────────────────────────────────────────────
-(function(){
-  window.addEventListener('online',  function(){ toast('✓ Back online.', 'success'); });
-  window.addEventListener('offline', function(){ toast('⚡ Offline — your data is saved locally.'); });
-})();
 
 </script>
 <div id="onboard-ov" class="ob-overlay" style="display:none">
