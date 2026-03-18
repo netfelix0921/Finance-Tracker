@@ -1679,78 +1679,69 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
    ═══════════════════════════════════════════════════════════════ */
 /* ── BOTTOM NAV ─────────────────────────────────────────────── */
 .bottom-nav {
-  display: none;
+  display: none; /* hidden on desktop */
   position: fixed;
-  bottom: 0; left: 0; right: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   width: 100%;
   background: rgba(255,255,255,0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   z-index: 150;
-  box-sizing: border-box;
-  /* No padding here — bn-bar handles its own height */
+  padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+  flex-shrink: 0;
 }
-.bn-bar {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-around;
-  width: 100%;
-  height: 54px;
-  box-sizing: border-box;
-  padding: 0 4px;
-}
-/* Only in standalone PWA: push icons above home indicator */
-@media all and (display-mode: standalone) {
-  .bn-bar {
-    height: calc(54px + env(safe-area-inset-bottom));
-    padding-bottom: env(safe-area-inset-bottom);
-    align-items: flex-start;
-    padding-top: 8px;
-  }
-}
+.bn-bar { display: flex; align-items: center; justify-content: space-around; }
 .bn-item {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
-  cursor: pointer; padding: 4px 6px; border-radius: 10px;
+  cursor: pointer; padding: 3px 6px; border-radius: 10px;
   border: none; background: transparent;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  min-width: 44px; flex: 1;
+  touch-action: manipulation; transition: background var(--dur-fast);
+  min-width: 44px;
 }
 .bn-item:active { background: var(--bg); }
 .bn-ico { position: relative; display: flex; align-items: center; justify-content: center; }
 .bn-ico svg {
-  width: 22px; height: 22px;
+  width: 20px; height: 20px;
   stroke: var(--t3); fill: none;
   stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
   transition: stroke var(--dur-fast);
 }
 /* Labels hidden by default, only show on active tab */
 .bn-lbl {
-  font-size: 9.5px; font-weight: 500; color: var(--t3);
+  font-size: 9px; font-weight: 500; color: var(--t3);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  white-space: nowrap; display: none;
-  transition: color var(--dur-fast);
+  transition: color var(--dur-fast); white-space: nowrap;
+  display: none;
 }
 .bn-item.active .bn-ico svg { stroke: var(--blue); }
 .bn-item.active .bn-lbl { display: block; color: var(--blue); font-weight: 600; }
-.bn-active-dot { display: none; }
-
+.bn-item.active .bn-active-dot { display: block; }
+.bn-active-dot {
+  display: none; width: 4px; height: 4px;
+  border-radius: 50%; background: var(--blue);
+  margin-top: -1px;
+}
 /* Add button */
 .bn-add {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: var(--blue); border: none; cursor: pointer;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(99,102,241,1), rgba(14,165,233,1));
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  box-shadow: 0 4px 20px rgba(99,102,241,0.55), 0 2px 6px rgba(0,0,0,0.18);
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), opacity 0.2s;
   flex-shrink: 0;
-  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  margin-bottom: 4px;
 }
-.bn-add:active { transform: scale(0.94); box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
+.bn-add:active { transform: scale(0.92); box-shadow: 0 2px 10px rgba(129,140,248,0.3); }
 .bn-add svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; }
-
-/* Badge */
+/* Badge on bills icon */
 .bn-badge {
   position: absolute; top: -3px; right: -5px;
   width: 8px; height: 8px; border-radius: 50%;
@@ -1777,8 +1768,15 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   transition: transform var(--dur-slow) var(--ease);
 }
 .bn-sheet.open { transform: translateY(0); }
-.bn-sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--t4); margin: 12px auto 16px; }
-.bn-sheet-title { font-size: 12px; font-weight: 500; color: var(--t3); text-transform: uppercase; letter-spacing: .06em; text-align: center; margin-bottom: 14px; }
+.bn-sheet-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--t4); margin: 12px auto 16px;
+}
+.bn-sheet-title {
+  font-size: 12px; font-weight: 500; color: var(--t3);
+  text-transform: uppercase; letter-spacing: .06em;
+  text-align: center; margin-bottom: 14px;
+}
 .bn-sheet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .bn-sheet-btn {
   display: flex; flex-direction: column; align-items: center; gap: 7px;
@@ -1789,35 +1787,50 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   transition: all var(--dur-fast);
 }
 .bn-sheet-btn:active { transform: scale(0.96); }
-.bn-sheet-ico { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.bn-sheet-ico {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
 .bn-sheet-ico svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .bn-sheet-lbl { font-size: 11px; font-weight: 500; color: var(--t1); }
 
 /* On mobile: show bottom nav */
 @media (max-width: 900px) {
   .bottom-nav { display: flex; flex-direction: column; }
-  .content { padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important; }
+  .content { padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important; }
 }
-
-/* Scroll: hide everything except + button, remove background */
-.bn-item { transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), background var(--dur-fast); }
-.bn-add  { transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease); }
+/* Transparent bottom nav on scroll — only plus stays */
+.bottom-nav {
+  transition: background 0.3s, border-color 0.3s, backdrop-filter 0.3s;
+}
 .bottom-nav.scrolled {
   background: transparent !important;
+  border-top-color: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border-top-color: transparent !important;
 }
 .bottom-nav.scrolled .bn-item {
-  opacity: 0; pointer-events: none; transform: translateY(6px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
 }
 .bottom-nav.scrolled .bn-add {
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+  box-shadow: 0 8px 24px rgba(37,99,235,0.5);
+}
+.bn-item {
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), background var(--dur-fast);
+}
+.bn-add {
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background var(--dur-fast);
 }
 
 /* Dark mode */
-html[data-theme="dark"] .bottom-nav { background: rgba(19,23,32,0.96); border-top-color: var(--border); }
+html[data-theme="dark"] .bottom-nav {
+  background: rgba(19,23,32,0.96);
+  border-top-color: var(--border);
+}
 html[data-theme="dark"] .bn-sheet { background: var(--surface); }
 html[data-theme="dark"] .bn-sheet-btn { background: var(--bg); border-color: var(--border); }
 
@@ -1967,7 +1980,7 @@ html[data-theme="dark"] .bn-sheet-btn { background: var(--bg); border-color: var
 
 /* ── 1. SCROLL FIX: content never hidden behind bottom nav ── */
 .content {
-  padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px)) !important;
 }
 @media(min-width:901px) {
   /* desktop: no bottom nav */
@@ -2207,7 +2220,7 @@ input[type="date"], input[type="number"] {
 /* Content padding — same tight value everywhere */
 .content {
   padding: 16px !important;
-  padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px)) !important;
 }
 @media(min-width:901px) {
   .content { padding: 20px !important; padding-bottom: 20px !important; }
@@ -2269,7 +2282,7 @@ input[type="date"], input[type="number"] {
 .content {
   padding: 16px !important;
   padding-top: calc(46px + env(safe-area-inset-top) + 14px) !important;
-  padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px)) !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
   flex: 1 !important;
@@ -2280,7 +2293,6 @@ input[type="date"], input[type="number"] {
   .content {
     padding: 24px 28px !important;
     padding-top: calc(46px + env(safe-area-inset-top) + 24px) !important;
-    /* ✅ FIX: On desktop, no bottom nav, so less padding */
     padding-bottom: 24px !important;
   }
 }
@@ -3186,7 +3198,7 @@ input[type="date"], input[type="number"] {
       <button class="bn-add" id="bn-add-btn" title="Log transaction">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <!-- Bills -->
+      <!-- Plans (Bills + Subs + Budget) -->
       <button class="bn-item" data-panel="bills" id="bn-bills">
         <div class="bn-ico">
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
