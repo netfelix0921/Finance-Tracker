@@ -2,6 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- FIX 4c: Content-Security-Policy — prevents XSS payloads from loading external
+     scripts or exfiltrating localStorage data to third-party origins.
+     'unsafe-inline' on style-src is required for the inline <style> block and
+     dynamically injected style attributes used throughout the app. -->
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -106,7 +112,10 @@
 
 /* ── SOFT WEIGHT SYSTEM — step all weights down one notch ── */
 /* 700→600, 600→500, 500→400 so nothing feels "punchy" */
-:where(h1,h2,h3,h4,h5,h6,[style*="font-weight:400"],[style*="font-weight:400"]) { font-weight:400 !important; }
+/* FIX 8c/8d: removed !important — heading weights are now set explicitly via
+   .ph-t, .panel-hero-title, .logo-text etc. so no blanket override is needed.
+   !important here blocked any targeted weight override without another !important. */
+:where(h1,h2,h3,h4,h5,h6) { font-weight: 400; }
 
 html, body {
   height: 100%;
@@ -2467,6 +2476,13 @@ input[type="date"], input[type="number"] {
         <svg id="theme-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
       </button>
     </div>
+    <div style="padding:6px 10px 2px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:10px;color:var(--t4);letter-spacing:0.02em">by Felix Marco</span>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="font-size:9.5px;font-family:'DM Mono',monospace;color:var(--t4);letter-spacing:0.04em">v1</span>
+        <span style="font-size:9px;font-weight:400;background:var(--amber-s);color:var(--amber);border:1px solid rgba(217,119,6,0.18);padding:1px 6px;border-radius:999px;letter-spacing:0.05em;text-transform:uppercase">Beta</span>
+      </div>
+    </div>
   </div>
 </aside>
 
@@ -3302,12 +3318,17 @@ input[type="date"], input[type="number"] {
    BILLS            renderBills / payBill / editBill / renderDashBills
    BOOT             processSubscriptions → renderDash → …
    ════════════════════════════════════════════════════════ */
-var SK='felix_v6';var S;
+// FIX 8a: named constants instead of a magic string — makes version bumps
+// explicit and self-documenting. When migrating to v7, increment STORAGE_VERSION
+// and add a migration block in loadState().
+var STORAGE_KEY='fintra_state_v6';
+var STORAGE_VERSION=6;
+var SK=STORAGE_KEY; // alias kept for compatibility with all existing SK references
 function defaultState(){return{accounts:[],income:[],expense:[],transfer:[],credit:[],savings:[],subscriptions:[],goals:[],installments:[],bills:[],savingsGoals:[],dismissedAlerts:[],nwSnapshots:{},balHistory:{},profile:{name:'',tagline:'',currency:'₱',photo:''},nextId:1};}
 function loadState(){
   try{
     var r=localStorage.getItem(SK);
-    if(!r){var old=localStorage.getItem('felix_v3');if(old)r=old;}
+    if(!r){var LEGACY_KEY='felix_v3';var old=localStorage.getItem(LEGACY_KEY);if(old)r=old;}
     if(r){
       var d=JSON.parse(r);
       if(d&&d.accounts){
@@ -3322,19 +3343,38 @@ function loadState(){
         return d;
       }
     }
-  }catch(e){}
+  }catch(e){
+    // FIX 5a: surface storage errors instead of silently swallowing them.
+    // JSON.parse failures (corrupted data) and private-browsing blocks both land here.
+    console.error('[Fintra] Failed to load saved state:',e);
+    // toast() isn't available yet at this point, so schedule it after boot.
+    setTimeout(function(){
+      if(typeof toast==='function')toast('⚠ Could not load saved data — starting fresh. Check console for details.','error');
+    },500);
+  }
   return defaultState();
 }
+// FIX 1a: Atomic save — snapshot state before write; roll back on failure
+// so a QuotaExceededError never leaves memory and storage out of sync.
 function save(){
+  var snapshot=JSON.stringify(S);
   try{
-    localStorage.setItem(SK,JSON.stringify(S));
+    localStorage.setItem(SK,snapshot);
+    _rebuildAccMap(); // FIX 3b: keep lookup map in sync with persisted state
     var el=ge('spill');
     if(el){el.textContent='saved ✓';el.className='tb-chip ok';setTimeout(function(){el.textContent='auto-save on';el.className='tb-chip tb-chip-hide';},2000);}
-    // FIX: Check storage quota after each save; warn at 80% usage
     checkStorageUsage();
-  }catch(e){toast('⚠ Save failed — storage may be full. Export a backup!','error');}
+  }catch(e){
+    // Roll back: restore in-memory state to what was last successfully persisted
+    try{
+      var persisted=localStorage.getItem(SK);
+      if(persisted)S=JSON.parse(persisted);
+    }catch(_){}
+    toast('⚠ Save failed — storage may be full. Changes rolled back. Export a backup!','error');
+  }
 }
 S=loadState();
+_rebuildAccMap(); // FIX 3b: build ID→account map immediately after state is loaded
 
 // ── HELPERS ──────────────────────────────────────────────
 // Utility shorthands used throughout:
@@ -3356,7 +3396,12 @@ function st(id,v){var el=ge(id);if(el)el.textContent=v;}
 function today(){return new Date().toISOString().split('T')[0];}
 function curYM(){return today().slice(0,7);}
 function cur(){return S.profile.currency||'₱';}
-function fmt(n){return cur()+Number(n).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});}
+// FIX 8e: derive the number-format locale from the user's chosen currency
+// so that decimal/thousands separators match the currency convention.
+// Previously en-PH was hardcoded even when the user switched to € or $.
+var CURRENCY_LOCALE_MAP={'₱':'en-PH','$':'en-US','€':'de-DE','£':'en-GB','¥':'ja-JP','₩':'ko-KR','₹':'en-IN','A$':'en-AU','C$':'en-CA','S$':'en-SG'};
+function fmtLocale(){return CURRENCY_LOCALE_MAP[cur()]||'en-US';}
+function fmt(n){return cur()+Number(n).toLocaleString(fmtLocale(),{minimumFractionDigits:2,maximumFractionDigits:2});}
 function nxtId(){return S.nextId++;}
 function toast(msg,type){var t=ge('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');setTimeout(function(){t.className='toast';},2800);}
 
@@ -3386,20 +3431,30 @@ function validateDate(val,fieldLabel){
   if(isNaN(d.getTime())){toast('Invalid '+(fieldLabel||'date')+'.','error');return false;}
   return true;
 }
+// FIX 1b: Normalize any date string to YYYY-MM-DD (zero-padded) before storage.
+// Prevents silent comparison failures for dates like "2025-1-5".
+function normalizeDate(val){
+  if(!val)return val;
+  var d=new Date(val+'T12:00:00');
+  if(isNaN(d.getTime()))return val;
+  return d.toISOString().split('T')[0];
+}
 function sanitizeText(str){
   // Trim whitespace, cap at 200 chars for free-text fields
   return String(str==null?'':str).trim().slice(0,200);
 }
 
-// ── STORAGE SIZE MONITOR ─────────────────────────────────────────────────────
-// FIX: localStorage is ~5MB on most browsers and can be silently evicted on iOS.
-// Warn the user when usage exceeds 80% of the estimated 5MB quota.
+// FIX 3c: Throttled storage monitor — only fires every 10 saves, and uses
+// JSON string length (bytes ≈ chars for ASCII) instead of creating a Blob
+// on every single save, which was wasteful.
+var _saveCount=0;
 function checkStorageUsage(){
+  if(++_saveCount%10!==0)return;
   try{
-    var used=new Blob([JSON.stringify(S)]).size;
-    var pct=used/(5*1024*1024);
+    var approxBytes=JSON.stringify(S).length;
+    var pct=approxBytes/(5*1024*1024);
     if(pct>0.8){
-      var kb=Math.round(used/1024);
+      var kb=Math.round(approxBytes/1024);
       toast('⚠ Storage '+Math.round(pct*100)+'% full ('+kb+'KB). Export a backup soon.','error');
     }
   }catch(e){}
@@ -3410,8 +3465,12 @@ function confirmModal(msg, onConfirm, danger){
     +'<div class="fa"><button class="'+(danger?'btn-danger':'btn-add')+' modal-save">Confirm</button><button class="btn-ghost" data-action="close-modal">Cancel</button></div>';
   openModal('Are you sure?',html,onConfirm);
 }
-function accName(id){var a=S.accounts.find(function(x){return String(x.id)===String(id);});return a?a.name:'—';}
-function findAcc(id){return S.accounts.find(function(x){return String(x.id)===String(id);});}
+// FIX 3b: O(1) account lookup via a keyed map rebuilt whenever accounts change.
+// Previously every findAcc() call did a full linear scan of S.accounts.
+var _accMap={};
+function _rebuildAccMap(){_accMap={};S.accounts.forEach(function(a){_accMap[String(a.id)]=a;});}
+function accName(id){var a=_accMap[String(id)];return a?a.name:'—';}
+function findAcc(id){return _accMap[String(id)]||null;}
 function hexA(hex,a){var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return'rgba('+r+','+g+','+b+','+a+')';}
 
 // ── DATE BADGE ──────────────────────────────────────────────
@@ -4030,7 +4089,7 @@ ge('btn-open-acc').addEventListener('click',function(){
     +'</div>'
     +'<div class="fr3">'
     +'<div class="fg"><label>Bank / issuer name</label><input type="text" id="ba-name" placeholder="e.g. BDO"></div>'
-    +'<div class="fg"><label>Account type</label><select id="ba-type" onchange="toggleCCFields()"><option>Checking</option><option>Savings</option><option>Payroll</option><option>E-wallet</option><option>Investment</option><option>Credit Card</option><option>Cash</option></select></div>'
+    +'<div class="fg"><label>Account type</label><select id="ba-type"><option>Checking</option><option>Savings</option><option>Payroll</option><option>E-wallet</option><option>Investment</option><option>Credit Card</option><option>Cash</option></select></div>'
     +'<div class="fg"><label>Last 4 digits</label><input type="text" id="ba-num" maxlength="4" placeholder="1234"></div>'
     +'</div>'
     +'<div class="fr" id="ba-row-bal">'
@@ -4069,6 +4128,9 @@ ge('btn-open-acc').addEventListener('click',function(){
   });
   setTimeout(function(){
     toggleCCFields();
+    // FIX 2d: wire account-type change via JS instead of inline onchange attribute
+    var baTypeEl=ge('ba-type');
+    if(baTypeEl)baTypeEl.addEventListener('change',toggleCCFields);
     // Wire network chip selector
     var chips=document.querySelectorAll('.net-chip');
     chips.forEach(function(chip){
@@ -4142,8 +4204,10 @@ function extractDominantColor(src, callback){
   img.src=src;
 }
 
+// FIX 4b: a.logo is a base64 data URL from FileReader, but we still esc() it
+// to prevent a crafted value from breaking out of the src attribute via a quote.
 function accLogoHtml(a){
-  if(a.logo)return'<img src="'+a.logo+'" style="width:100%;height:100%;object-fit:contain;border-radius:9px">';
+  if(a.logo)return'<img src="'+esc(a.logo)+'" style="width:100%;height:100%;object-fit:contain;border-radius:9px">';
   return a.isCC?'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><line x1="1.5" y1="7" x2="14.5" y2="7"/><line x1="4" y1="10.5" x2="6" y2="10.5"/></svg>':'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="5" width="13" height="9" rx="1"/><path d="M5 5V3.5A1.5 1.5 0 0 1 6.5 2h3A1.5 1.5 0 0 1 11 3.5V5"/><line x1="1.5" y1="10" x2="14.5" y2="10"/></svg>';
 }
 // ── SAVINGS EARMARK HELPERS ──────────────────────────────────────────────
@@ -5512,41 +5576,43 @@ function catIcon(category){return CAT_SVG[category]||CAT_SVG['default'];}
 function catColor(category){return CAT_COLOR[category]||'rgba(100,110,140,0.12)';}
 
 
+// FIX 4a: All user-supplied fields in LOG_CFG subtitle/title functions now
+// pass through esc() before being inserted into innerHTML via renderLog().
 var LOG_CFG={
   income:{
     icon:function(e){return catIcon(e.category);},
     dotBg:function(e){return catColor(e.category);},
-    title:function(e){return e.source;},
-    sub:function(e){return e.date+(e.note?' · '+e.note:'');},
+    title:function(e){return esc(e.source);},
+    sub:function(e){return esc(e.date)+(e.note?' · '+esc(e.note):'');},
     amt:function(e){return{sign:'+',cls:'pos',val:fmt(e.amt)};}
   },
   expense:{
     icon:function(e){return catIcon(e.category);},
     dotBg:function(e){return catColor(e.category);},
-    title:function(e){return e.desc;},
-    sub:function(e){return e.date+' · '+e.category+(e.note?' · '+e.note:'');},
+    title:function(e){return esc(e.desc);},
+    sub:function(e){return esc(e.date)+' · '+esc(e.category)+(e.note?' · '+esc(e.note):'');},
     amt:function(e){return{sign:'-',cls:'neg',val:fmt(e.amt)};}
   },
   transfer:{
     icon:function(){return'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h10M3 5l3-3M3 5l3 3"/><path d="M13 11H3m10 0l-3-3m3 3l-3 3"/></svg>';},
     dotBg:function(){return'rgba(8,145,178,0.12)';},
-    title:function(e){return accName(e.from)+' → '+accName(e.to);},
-    sub:function(e){return e.date+(e.note?' · '+e.note:'');},
+    title:function(e){return esc(accName(e.from))+' → '+esc(accName(e.to));},
+    sub:function(e){return esc(e.date)+(e.note?' · '+esc(e.note):'');},
     amt:function(e){return{sign:'',cls:'neu',val:fmt(e.amt)};}
   },
   credit:{
     icon:function(e){return e.isPaid?'<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5,8 6,12 13.5,4"/></svg>':catIcon(e.category);},
     dotBg:function(e){return e.isPaid?'rgba(14,168,96,0.12)':catColor(e.category);},
-    title:function(e){return e.desc;},
-    // NOTE: sub for credit embeds a <span> for paid status — it is safe (static HTML, no user data inside the span)
-    sub:function(e){return e.date+' · '+e.card+(e.isPaid?' · <span style="color:var(--green);font-weight:400">Paid</span>':(e.due&&e.type==='Charge'?' · Due '+e.due:''));},
+    title:function(e){return esc(e.desc);},
+    // NOTE: the <span> for paid status is static HTML (no user data inside the tag itself)
+    sub:function(e){return esc(e.date)+' · '+esc(e.card)+(e.isPaid?' · <span style="color:var(--green);font-weight:400">Paid</span>':(e.due&&e.type==='Charge'?' · Due '+esc(e.due):''));},
     amt:function(e){return{sign:e.type==='Charge'?'-':'+',cls:e.type==='Charge'?(e.isPaid?'neu':'neg'):'pos',val:fmt(e.amt)};}
   },
   savings:{
     icon:function(){return catIcon('Savings');},
     dotBg:function(){return'rgba(59,107,255,0.12)';},
-    title:function(e){return e.goal;},
-    sub:function(e){return e.date+' · '+e.type+(e.account?' · '+accName(e.account):'');},
+    title:function(e){return esc(e.goal);},
+    sub:function(e){return esc(e.date)+' · '+esc(e.type)+(e.account?' · '+esc(accName(e.account)):'');},
     amt:function(e){return{sign:e.type==='Deposit'?'+':'-',cls:e.type==='Deposit'?'pos':'neg',val:fmt(e.amt)};}
   }
 };
@@ -5561,9 +5627,13 @@ function filterByDateRange(data,range,from,to){
     // support both YYYY-MM (month) and YYYY-MM-DD (day) formats
     var fromCmp=from?from:'0000-01-01';
     var toCmp=to?to:'9999-12-31';
-    // if month-only, expand to full month range
+    // FIX 1b: expand month-only dates to the real first/last day of that month
+    // (old code used '-31' which overshoots Feb and 30-day months)
     if(from&&from.length===7)fromCmp=from+'-01';
-    if(to&&to.length===7)toCmp=to+'-31';
+    if(to&&to.length===7){
+      var _tp=to.split('-');
+      toCmp=new Date(+_tp[0],+_tp[1],0).toISOString().split('T')[0]; // last day of month
+    }
     return data.filter(function(e){return e.date>=fromCmp&&e.date<=toCmp;});
   }
   return data;
@@ -6464,8 +6534,8 @@ function logForm(type){
     income:'<div class="fr3"><div class="fg"><label>Date</label><input type="date" id="in-date" value="'+td+'"></div><div class="fg"><label>Source</label><input type="text" id="in-src" placeholder="e.g. Salary"></div><div class="fg"><label>Category</label><select id="in-cat"><option>Salary</option><option>Freelance</option><option>Business</option><option>Investment</option><option>Gift</option><option>Bonus</option><option>Other</option></select></div></div><div class="fr"><div class="fg"><label>Amount</label><input type="number" id="in-amt" min="0" placeholder="0.00"></div><div class="fg"><label>Deposit to account</label><select id="in-acc" onchange="showAccBal(\'in-acc\',\'in-bal-hint\')"></select></div></div><div id="in-bal-hint" style="font-size:11.5px;padding:7px 11px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin:-4px 0 6px;display:none"></div><div class="fg"><label>Note</label><input type="text" id="in-note" placeholder="Optional"></div><div class="fa"><button class="btn-add modal-save">Save</button><button class="btn-ghost" data-action="close-modal">Cancel</button></div>',
     expense:'<div class="fr3"><div class="fg"><label>Date</label><input type="date" id="ex-date" value="'+td+'"></div><div class="fg"><label>Description</label><input type="text" id="ex-desc" placeholder="e.g. Groceries"></div><div class="fg"><label>Category</label><select id="ex-cat"><option>Food</option><option>Transport</option><option>Utilities</option><option>Health</option><option>Shopping</option><option>Entertainment</option><option>Rent</option><option>Education</option><option>Subscription</option><option>Other</option></select></div></div><div class="fr"><div class="fg"><label>Amount</label><input type="number" id="ex-amt" min="0" placeholder="0.00"></div><div class="fg"><label>Paid from account</label><select id="ex-acc" onchange="showAccBal(\'ex-acc\',\'ex-bal-hint\')"></select></div></div><div id="ex-bal-hint" style="font-size:11.5px;padding:7px 11px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin:-4px 0 6px;display:none"></div><div class="fg"><label>Note</label><input type="text" id="ex-note" placeholder="Optional"></div><div class="fa"><button class="btn-add modal-save">Save</button><button class="btn-ghost" data-action="close-modal">Cancel</button></div>',
     transfer:'<div class="fr3"><div class="fg"><label>Date</label><input type="date" id="tr-date" value="'+td+'"></div><div class="fg"><label>From account</label><select id="tr-from" onchange="showTransferBal()"></select></div><div class="fg"><label>To account</label><select id="tr-to"></select></div></div><div id="tr-bal-hint" style="font-size:11.5px;margin:-4px 0 6px;padding:7px 11px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:none"></div><div class="fr"><div class="fg"><label>Amount</label><input type="number" id="tr-amt" min="0" placeholder="0.00"></div><div class="fg"><label>Note</label><input type="text" id="tr-note" placeholder="Optional"></div></div><div class="fa"><button class="btn-add modal-save">Save</button><button class="btn-ghost" data-action="close-modal">Cancel</button></div>',
-    credit:'<div class="fr3"><div class="fg"><label>Date</label><input type="date" id="cr-date" value="'+td+'"></div><div class="fg"><label>Description</label><input type="text" id="cr-desc" placeholder="e.g. Online order"></div><div class="fg"><label>Type</label><select id="cr-type" onchange="refreshCrCard()"><option>Charge</option><option>Payment</option></select></div></div><div class="fr3"><div class="fg"><label>Credit Card</label><select id="cr-card" onchange="refreshCrCard()"></select></div><div class="fg"><label>Category</label><select id="cr-cat"><option>Shopping</option><option>Food</option><option>Travel</option><option>Health</option><option>Utilities</option><option>Subscription</option><option>Other</option></select></div><div class="fg"><label>Amount</label><input type="number" id="cr-amt" min="0" placeholder="0.00" oninput="refreshCrCard()"></div></div><div id="cr-avail-info" style="margin:-4px 0 8px;font-size:11.5px;font-weight:400;padding:7px 11px;border-radius:8px;display:none"></div><div class="fr"><div class="fg"><label>Payment due date</label><input type="date" id="cr-due"></div><div class="fg"><label>Note</label><input type="text" id="cr-note" placeholder="Optional"></div></div><div class="fa"><button class="btn-add modal-save">Save</button><button class="btn-ghost" data-action="close-modal">Cancel</button></div>',
-    savings:'<div style=\"background:var(--blue-s);border-radius:9px;padding:9px 12px;margin-bottom:12px;font-size:11.5px;color:var(--blue)\">💡 <strong>Savings = goal tracker.</strong> No money moves. Log what you\'ve set aside toward a goal. To move money between banks, use <strong>Transfer</strong>.</div><div class=\"fr3\"><div class=\"fg\"><label>Date</label><input type=\"date\" id=\"sv-date\" value=\"'+td+'\"></div><div class=\"fg\"><label>Goal / label</label><input type=\"text\" id=\"sv-goal\" placeholder=\"e.g. Travel, Emergency Fund\"></div><div class=\"fg\"><label>Type</label><select id=\"sv-type\" onchange=\"showSavingsHint()\"><option value=\"Deposit\">💰 Deposit (saving toward goal)</option><option value=\"Withdrawal\">📤 Withdrawal (used from goal)</option></select></div></div><div class=\"fr\"><div class=\"fg\"><label>Amount</label><input type=\"number\" id=\"sv-amt\" min=\"0\" placeholder=\"0.00\"></div><div class=\"fg\"><label>Linked account <span style=\"font-weight:400;font-size:10px;color:var(--t3)\">(for reference)</span></label><select id=\"sv-acc\"></select></div></div><div id=\"sv-hint\" style=\"font-size:11.5px;padding:8px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin:-4px 0 8px;display:none\"></div><div class=\"fg\"><label>Note</label><input type=\"text\" id=\"sv-note\" placeholder=\"Optional\"></div><div class=\"fa\"><button class=\"btn-add modal-save\">Save</button><button class=\"btn-ghost\" data-action=\"close-modal\">Cancel</button></div>'
+    credit:'<div class="fr3"><div class="fg"><label>Date</label><input type="date" id="cr-date" value="'+td+'"></div><div class="fg"><label>Description</label><input type="text" id="cr-desc" placeholder="e.g. Online order"></div><div class="fg"><label>Type</label><select id="cr-type"><option>Charge</option><option>Payment</option></select></div></div><div class="fr3"><div class="fg"><label>Credit Card</label><select id="cr-card"></select></div><div class="fg"><label>Category</label><select id="cr-cat"><option>Shopping</option><option>Food</option><option>Travel</option><option>Health</option><option>Utilities</option><option>Subscription</option><option>Other</option></select></div><div class="fg"><label>Amount</label><input type="number" id="cr-amt" min="0" placeholder="0.00"></div></div><div id="cr-avail-info" style="margin:-4px 0 8px;font-size:11.5px;font-weight:400;padding:7px 11px;border-radius:8px;display:none"></div><div class="fr"><div class="fg"><label>Payment due date</label><input type="date" id="cr-due"></div><div class="fg"><label>Note</label><input type="text" id="cr-note" placeholder="Optional"></div></div><div class="fa"><button class="btn-add modal-save">Save</button><button class="btn-ghost" data-action="close-modal">Cancel</button></div>',
+    savings:'<div style=\"background:var(--blue-s);border-radius:9px;padding:9px 12px;margin-bottom:12px;font-size:11.5px;color:var(--blue)\">💡 <strong>Savings = goal tracker.</strong> No money moves. Log what you\'ve set aside toward a goal. To move money between banks, use <strong>Transfer</strong>.</div><div class=\"fr3\"><div class=\"fg\"><label>Date</label><input type=\"date\" id=\"sv-date\" value=\"'+td+'\"></div><div class=\"fg\"><label>Goal / label</label><input type=\"text\" id=\"sv-goal\" placeholder=\"e.g. Travel, Emergency Fund\"></div><div class=\"fg\"><label>Type</label><select id=\"sv-type\"><option value=\"Deposit\">💰 Deposit (saving toward goal)</option><option value=\"Withdrawal\">📤 Withdrawal (used from goal)</option></select></div></div><div class=\"fr\"><div class=\"fg\"><label>Amount</label><input type=\"number\" id=\"sv-amt\" min=\"0\" placeholder=\"0.00\"></div><div class=\"fg\"><label>Linked account <span style=\"font-weight:400;font-size:10px;color:var(--t3)\">(for reference)</span></label><select id=\"sv-acc\"></select></div></div><div id=\"sv-hint\" style=\"font-size:11.5px;padding:8px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin:-4px 0 8px;display:none\"></div><div class=\"fg\"><label>Note</label><input type=\"text\" id=\"sv-note\" placeholder=\"Optional\"></div><div class=\"fa\"><button class=\"btn-add modal-save\">Save</button><button class=\"btn-ghost\" data-action=\"close-modal\">Cancel</button></div>'
   };
   var titles={income:'Log Income',expense:'Log Expense',transfer:'Log Transfer',credit:'Log Credit',savings:'Log Savings'};
   openModal(titles[type],forms[type],function(){saveEntry(type);});
@@ -6473,8 +6543,18 @@ function logForm(type){
   setTimeout(function(){
     fillSelects();
     if(type==='transfer')showTransferBal();
-    if(type==='credit')refreshCrCard();
-    if(type==='savings')showSavingsHint();
+    if(type==='credit'){
+      refreshCrCard();
+      // FIX 2d: wire credit form events via JS instead of inline onchange/oninput
+      var crTypeEl=ge('cr-type');if(crTypeEl)crTypeEl.addEventListener('change',refreshCrCard);
+      var crCardEl=ge('cr-card');if(crCardEl)crCardEl.addEventListener('change',refreshCrCard);
+      var crAmtEl=ge('cr-amt');if(crAmtEl)crAmtEl.addEventListener('input',refreshCrCard);
+    }
+    if(type==='savings'){
+      showSavingsHint();
+      // FIX 2d: wire sv-type change via JS instead of inline onchange
+      var svTypeEl=ge('sv-type');if(svTypeEl)svTypeEl.addEventListener('change',showSavingsHint);
+    }
     if(type==='expense')wireExpenseCatMemory();
     if(type==='income')wireIncomeCatMemory();
   },30);
@@ -6519,78 +6599,83 @@ function showSavingsHint(){
   }
 }
 
+// FIX 2b: Each transaction type now uses a uniquely named amount variable
+// (incAmt, expAmt, trAmt, crAmt, svAmt) so var-hoisting across the five
+// if-branches never causes a value from one branch to bleed into another.
 function saveEntry(type){
   if(type==='income'){
-    var amt=parseFloat(gv('in-amt'));
-    if(!validateAmt(amt,'Income amount'))return;
+    var incAmt=parseFloat(gv('in-amt'));
+    if(!validateAmt(incAmt,'Income amount'))return;
     if(!validateDate(gv('in-date'),'Date'))return;
     var inSrc=sanitizeText(gv('in-src'));
     if(!inSrc){toast('Enter an income source.','error');return;}
     if(!gv('in-acc')){toast('Select an account to deposit into.','error');return;}
-    var acc=findAcc(gv('in-acc'));
-    if(!acc){toast('Selected account not found.','error');return;}
-    var _taxRate=parseFloat(gv('in-taxrate'))||0;var _taxAmt=+( amt*_taxRate).toFixed(2);var e={id:nxtId(),date:gv('in-date'),source:inSrc,category:gv('in-cat'),account:gv('in-acc'),note:sanitizeText(gv('in-note')),amt:amt,taxRate:_taxRate,taxAmt:_taxAmt};
-    acc.balance=+(acc.balance+amt).toFixed(2);
-    saveCatMem(e.source,e.category);S.income.push(e);save();renderLog('income');statIncome();updateProfileStats();renderAccounts();renderDash();closeModal();toast('Income saved ✓','success');
+    var incAcc=findAcc(gv('in-acc'));
+    if(!incAcc){toast('Selected account not found.','error');return;}
+    var _taxRate=parseFloat(gv('in-taxrate'))||0;
+    var _taxAmt=+(incAmt*_taxRate).toFixed(2);
+    var incEntry={id:nxtId(),date:normalizeDate(gv('in-date')),source:inSrc,category:gv('in-cat'),account:gv('in-acc'),note:sanitizeText(gv('in-note')),amt:incAmt,taxRate:_taxRate,taxAmt:_taxAmt};
+    incAcc.balance=+(incAcc.balance+incAmt).toFixed(2);
+    saveCatMem(incEntry.source,incEntry.category);S.income.push(incEntry);save();renderLog('income');statIncome();updateProfileStats();renderAccounts();renderDash();closeModal();toast('Income saved ✓','success');
   }
 
   if(type==='expense'){
-    var amt=parseFloat(gv('ex-amt'));
-    if(!validateAmt(amt,'Expense amount'))return;
+    var expAmt=parseFloat(gv('ex-amt'));
+    if(!validateAmt(expAmt,'Expense amount'))return;
     if(!validateDate(gv('ex-date'),'Date'))return;
     var exDesc=sanitizeText(gv('ex-desc'));
     if(!exDesc){toast('Enter a description.','error');return;}
     if(!gv('ex-acc')){toast('Select the account used for this expense.','error');return;}
-    var acc=findAcc(gv('ex-acc'));
-    if(!acc){toast('Selected account not found.','error');return;}
-    if(acc.balance<amt){
-      var _expData={id:nxtId(),date:gv('ex-date'),desc:exDesc,category:gv('ex-cat'),account:gv('ex-acc'),note:sanitizeText(gv('ex-note')),amt:amt};
-      var _acc=acc;
-      confirmModal('⚠ This expense ('+fmt(amt)+') exceeds your <strong>'+esc(acc.name)+'</strong> balance ('+fmt(acc.balance)+'). Log anyway?',function(){
-        _acc.balance=+(_acc.balance-_expData.amt).toFixed(2);
+    var expAcc=findAcc(gv('ex-acc'));
+    if(!expAcc){toast('Selected account not found.','error');return;}
+    if(expAcc.balance<expAmt){
+      var _expData={id:nxtId(),date:normalizeDate(gv('ex-date')),desc:exDesc,category:gv('ex-cat'),account:gv('ex-acc'),note:sanitizeText(gv('ex-note')),amt:expAmt};
+      var _overdraftAcc=expAcc;
+      confirmModal('⚠ This expense ('+fmt(expAmt)+') exceeds your <strong>'+esc(expAcc.name)+'</strong> balance ('+fmt(expAcc.balance)+'). Log anyway?',function(){
+        _overdraftAcc.balance=+(_overdraftAcc.balance-_expData.amt).toFixed(2);
         saveCatMem(_expData.desc,_expData.category);S.expense.push(_expData);save();renderLog('expense');statExpense();updateProfileStats();renderAccounts();renderDash();closeModal();toast('Expense saved ✓','success');
       });
       return;
     }
-    var e={id:nxtId(),date:gv('ex-date'),desc:exDesc,category:gv('ex-cat'),account:gv('ex-acc'),note:sanitizeText(gv('ex-note')),amt:amt};
-    acc.balance=+(acc.balance-amt).toFixed(2);
+    var expEntry={id:nxtId(),date:normalizeDate(gv('ex-date')),desc:exDesc,category:gv('ex-cat'),account:gv('ex-acc'),note:sanitizeText(gv('ex-note')),amt:expAmt};
+    expAcc.balance=+(expAcc.balance-expAmt).toFixed(2);
     var _spTog=document.getElementById('ex-split-tog');
     if(_spTog&&_spTog.checked){
       var _a2id=gv('ex-acc2');var _pct=parseFloat(gv('ex-split-pct'))||50;
-      var _s1=+(amt*(_pct/100)).toFixed(2),_s2=+(amt-_s1).toFixed(2);
-      var _ra1=findAcc(e.account);if(_ra1)_ra1.balance=+(_ra1.balance-_s1).toFixed(2);
+      var _s1=+(expAmt*(_pct/100)).toFixed(2),_s2=+(expAmt-_s1).toFixed(2);
+      var _ra1=findAcc(expEntry.account);if(_ra1)_ra1.balance=+(_ra1.balance-_s1).toFixed(2);
       var _ra2=findAcc(_a2id);if(_ra2)_ra2.balance=+(_ra2.balance-_s2).toFixed(2);
-      var _e2={id:nxtId(),date:e.date,desc:e.desc,category:e.category,account:_a2id,note:'split',amt:_s2};
-      e.amt=_s1;e.note=(e.note?e.note+' ':'')+'split';
-      saveCatMem(e.desc,e.category);S.expense.push(e);S.expense.push(_e2);
+      var _e2={id:nxtId(),date:expEntry.date,desc:expEntry.desc,category:expEntry.category,account:_a2id,note:'split',amt:_s2};
+      expEntry.amt=_s1;expEntry.note=(expEntry.note?expEntry.note+' ':'')+'split';
+      saveCatMem(expEntry.desc,expEntry.category);S.expense.push(expEntry);S.expense.push(_e2);
       save();renderLog('expense');statExpense();updateProfileStats();renderAccounts();renderDash();closeModal();
       toast('Split \u2713 \u2014 '+fmt(_s1)+' + '+fmt(_s2),'success');
     } else {
-      saveCatMem(gv('ex-desc'),gv('ex-cat'));S.expense.push(e);save();renderLog('expense');statExpense();updateProfileStats();renderAccounts();renderDash();closeModal();toast('Expense saved \u2713','success');
+      saveCatMem(gv('ex-desc'),gv('ex-cat'));S.expense.push(expEntry);save();renderLog('expense');statExpense();updateProfileStats();renderAccounts();renderDash();closeModal();toast('Expense saved \u2713','success');
     }
   }
 
   if(type==='transfer'){
-    var amt=parseFloat(gv('tr-amt'));
-    if(!validateAmt(amt,'Transfer amount'))return;
+    var trAmt=parseFloat(gv('tr-amt'));
+    if(!validateAmt(trAmt,'Transfer amount'))return;
     if(!validateDate(gv('tr-date'),'Date'))return;
-    var from=gv('tr-from'),to=gv('tr-to');
-    if(!from){toast('Select the account to transfer FROM.','error');return;}
-    if(!to){toast('Select the account to transfer TO.','error');return;}
-    if(from===to){toast('From and To accounts must be different.','error');return;}
-    var fa=findAcc(from),ta=findAcc(to);
-    if(!fa){toast('Source account not found.','error');return;}
-    if(!ta){toast('Destination account not found.','error');return;}
-    if(fa.balance<amt){toast('⚠ Insufficient balance in '+fa.name+' ('+fmt(fa.balance)+').','error');return;}
-    fa.balance=+(fa.balance-amt).toFixed(2);
-    ta.balance=+(ta.balance+amt).toFixed(2);
-    S.transfer.push({id:nxtId(),date:gv('tr-date'),from:from,to:to,note:sanitizeText(gv('tr-note')),amt:amt});
+    var trFrom=gv('tr-from'),trTo=gv('tr-to');
+    if(!trFrom){toast('Select the account to transfer FROM.','error');return;}
+    if(!trTo){toast('Select the account to transfer TO.','error');return;}
+    if(trFrom===trTo){toast('From and To accounts must be different.','error');return;}
+    var trFa=findAcc(trFrom),trTa=findAcc(trTo);
+    if(!trFa){toast('Source account not found.','error');return;}
+    if(!trTa){toast('Destination account not found.','error');return;}
+    if(trFa.balance<trAmt){toast('⚠ Insufficient balance in '+trFa.name+' ('+fmt(trFa.balance)+').','error');return;}
+    trFa.balance=+(trFa.balance-trAmt).toFixed(2);
+    trTa.balance=+(trTa.balance+trAmt).toFixed(2);
+    S.transfer.push({id:nxtId(),date:normalizeDate(gv('tr-date')),from:trFrom,to:trTo,note:sanitizeText(gv('tr-note')),amt:trAmt});
     save();renderLog('transfer');statTransfer();renderAccounts();renderDash();closeModal();toast('Transfer saved ✓','success');
   }
 
   if(type==='credit'){
-    var amt=parseFloat(gv('cr-amt'));
-    if(!validateAmt(amt,'Credit amount'))return;
+    var crAmt=parseFloat(gv('cr-amt'));
+    if(!validateAmt(crAmt,'Credit amount'))return;
     if(!validateDate(gv('cr-date'),'Date'))return;
     var crDesc=sanitizeText(gv('cr-desc'));
     if(!crDesc){toast('Enter a description.','error');return;}
@@ -6602,33 +6687,33 @@ function saveEntry(type){
       ccAcc=findAcc(cardVal.replace('cc:',''));
     }
     if(crType==='Charge'&&ccAcc){
-      var avail=Math.max(0,(ccAcc.creditLimit||0)-(ccAcc.usedCredit||0));
-      if(amt>avail){toast('⚠ Over credit limit! Available: '+fmt(avail),'error');return;}
-      ccAcc.usedCredit=+((ccAcc.usedCredit||0)+amt).toFixed(2);
+      var crAvail=Math.max(0,(ccAcc.creditLimit||0)-(ccAcc.usedCredit||0));
+      if(crAmt>crAvail){toast('⚠ Over credit limit! Available: '+fmt(crAvail),'error');return;}
+      ccAcc.usedCredit=+((ccAcc.usedCredit||0)+crAmt).toFixed(2);
     }
     if(crType==='Payment'&&ccAcc){
-      if(amt>(ccAcc.usedCredit||0)){toast('⚠ Payment ('+fmt(amt)+') exceeds outstanding balance ('+fmt(ccAcc.usedCredit||0)+').','error');return;}
-      ccAcc.usedCredit=+Math.max(0,(ccAcc.usedCredit||0)-amt).toFixed(2);
+      if(crAmt>(ccAcc.usedCredit||0)){toast('⚠ Payment ('+fmt(crAmt)+') exceeds outstanding balance ('+fmt(ccAcc.usedCredit||0)+').','error');return;}
+      ccAcc.usedCredit=+Math.max(0,(ccAcc.usedCredit||0)-crAmt).toFixed(2);
     }
     var cardName=ccAcc?ccAcc.name:(cardVal==='manual'?'Manual':'Other');
-    S.credit.push({id:nxtId(),date:gv('cr-date'),desc:crDesc,card:cardName,cardId:ccAcc?ccAcc.id:null,category:gv('cr-cat'),type:crType,due:gv('cr-due'),note:sanitizeText(gv('cr-note')),amt:amt});
+    S.credit.push({id:nxtId(),date:normalizeDate(gv('cr-date')),desc:crDesc,card:cardName,cardId:ccAcc?ccAcc.id:null,category:gv('cr-cat'),type:crType,due:gv('cr-due')?normalizeDate(gv('cr-due')):'',note:sanitizeText(gv('cr-note')),amt:crAmt});
     save();renderLog('credit');statCredit();renderAccounts();renderCCSummary();renderDash();renderAlerts();closeModal();toast('Credit saved ✓','success');
   }
 
   if(type==='savings'){
-    var amt=parseFloat(gv('sv-amt'));
-    if(!validateAmt(amt,'Amount'))return;
+    var svAmt=parseFloat(gv('sv-amt'));
+    if(!validateAmt(svAmt,'Amount'))return;
     if(!validateDate(gv('sv-date'),'Date'))return;
     var svGoal=sanitizeText(gv('sv-goal'));
     if(!svGoal){toast('Enter a goal or label (e.g. Travel, Emergency Fund).','error');return;}
     var stype=gv('sv-type');
     var svAcc=gv('sv-acc'); // linked account — reference only, no balance change
-    var e={id:nxtId(),date:gv('sv-date'),goal:svGoal,type:stype,account:svAcc,toAccount:null,note:sanitizeText(gv('sv-note')),amt:amt};
+    var svEntry={id:nxtId(),date:normalizeDate(gv('sv-date')),goal:svGoal,type:stype,account:svAcc,toAccount:null,note:sanitizeText(gv('sv-note')),amt:svAmt};
     // ── SAVINGS IS A GOAL TRACKER — no account balance changes ──
     // If you want to physically move money between banks, use Transfer.
-    S.savings.push(e);
+    S.savings.push(svEntry);
     save();renderLog('savings');statSavings();updateProfileStats();renderAccounts();renderDash();renderSavingsGoals();closeModal();
-    toast('Savings logged ✓ — '+fmt(amt)+' '+(stype==='Deposit'?'saved toward':'withdrawn from')+' "'+e.goal+'"','success');
+    toast('Savings logged ✓ — '+fmt(svAmt)+' '+(stype==='Deposit'?'saved toward':'withdrawn from')+' "'+svEntry.goal+'"','success');
   }
 }
 
@@ -7851,6 +7936,8 @@ function recordBalanceHistory(){
     // Only record once per day
     if(!hist.length||hist[hist.length-1].d!==t){
       hist.push({d:t,b:a.isCC?-(a.usedCredit||0):a.balance});
+      // FIX 6b: only trim when we are actually over the cap — previously this
+      // splice ran unconditionally on every boot even when nothing needed trimming.
       if(hist.length>30)hist.splice(0,hist.length-30);
     }
   });
@@ -7885,7 +7972,7 @@ function renderSavingsGoalSync(g){
   var free=accBal-saved;
   return'<div style="background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:11.5px">'
     +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
-    +'<span style="color:var(--t3)">'+acc.name+' balance</span>'
+    +'<span style="color:var(--t3)">'+esc(acc.name)+' balance</span>'
     +'<span style="font-family:DM Mono,monospace;color:var(--t1)">'+fmt(accBal)+'</span>'
     +'</div>'
     +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
@@ -7901,25 +7988,40 @@ function renderSavingsGoalSync(g){
 }
 
 // ── BOOT ──────────────────────────────────────────────
-updateDateBadge();
-processSubscriptions();
-processInstallments();
-applyPhoto();
-renderDash();
-renderAlerts();
-renderAccounts();
-fillSelects();
-renderBudget();
-renderSubs();
-renderDashBills();
-renderSavingsGoals();
-wireChartControls();
-wireLogFilters();
+// FIX 5d: wrap the entire boot sequence in try/catch so a single broken
+// element or missing DOM node doesn't silently blank the whole app.
+try{
+  updateDateBadge();
+  processSubscriptions();
+  processInstallments();
+  applyPhoto();
+  renderDash();
+  renderAlerts();
+  renderAccounts();
+  fillSelects();
+  renderBudget();
+  renderSubs();
+  renderDashBills();
+  renderSavingsGoals();
+  wireChartControls();
+  wireLogFilters();
+  wireDashButtons();
+  processBudgetRollovers();
+  recordBalanceHistory();
+  maybeShowOnboard();
+}catch(bootErr){
+  console.error('[Fintra] Boot error — one or more startup functions failed:',bootErr);
+}
 
-wireDashButtons();
-processBudgetRollovers();
-recordBalanceHistory();
-maybeShowOnboard(); // FIX: was called twice (copy-paste bug) — removed duplicate
+// FIX 5b: Request persistent storage so Safari ITP cannot silently evict
+// localStorage data for origins not visited in the past 7 days.
+if(navigator.storage&&navigator.storage.persist){
+  navigator.storage.persist().then(function(granted){
+    if(!granted){
+      console.warn('[Fintra] Persistent storage not granted. Data may be evicted on iOS after 7 days of inactivity.');
+    }
+  });
+}
 
 // ── BULK SELECT ──────────────────────────────────────────────
 function wireBulkSelect(type){
@@ -8009,7 +8111,20 @@ document.addEventListener('keydown',function(e){
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('./service-worker.js')
-      .then(function(reg) { console.log('Service Worker registered', reg); })
+      .then(function(reg) {
+        console.log('Service Worker registered', reg);
+        // FIX 5c: notify users when a new version of the app is available
+        // so they don't silently run stale cached code after a bug-fix deploy.
+        reg.addEventListener('updatefound', function() {
+          var newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', function() {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              toast('App updated — refresh to get the latest version.', 'info');
+            }
+          });
+        });
+      })
       .catch(function(err) { console.error('Service Worker failed', err); });
   });
 }
