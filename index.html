@@ -353,7 +353,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
   transition: transform 0.3s var(--ease);
 }
 .topbar.hide { transform: translateY(-100%); }
-.topbar.tb-hidden { /* disabled — topbar always fixed */ }
+.topbar.tb-hidden { transform: translateY(-100%); pointer-events: none; }
 .topbar-left { display: flex; align-items: center; gap: 0; min-width: 0; }
 .topbar-logo {
   display: flex; align-items: center; gap: 9px;
@@ -1467,10 +1467,10 @@ html[data-theme="dark"] {
   --surface-dim: rgba(19,23,32,0.85);
   --border:     rgba(255,255,255,0.07);
   --border2:    rgba(255,255,255,0.11);
-  --t1:  #EEF2FF;
-  --t2:  #8B95B0;
-  --t3:  #4B5268;
-  --t4:  #2D3148;
+  --t1:  #F0F4FF;
+  --t2:  #C2CBDF;
+  --t3:  #8E9AB8;
+  --t4:  #545F7A;
   --sh-xs:  0 1px 2px rgba(0,0,0,0.30);
   --sh-sm:  0 2px 4px rgba(0,0,0,0.40), 0 1px 2px rgba(0,0,0,0.28);
   --sh-md:  0 4px 12px rgba(0,0,0,0.50), 0 2px 4px rgba(0,0,0,0.30);
@@ -1643,18 +1643,17 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   z-index: 150;
-  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
   flex-shrink: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease;
 }
-.bn-bar { display: flex; align-items: center; justify-content: space-around; width: 100%; }
+.bn-bar { display: flex; align-items: center; justify-content: space-around; }
 .bn-item {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  cursor: pointer; padding: 4px 0; border-radius: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  cursor: pointer; padding: 3px 6px; border-radius: 10px;
   border: none; background: transparent;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation; transition: background var(--dur-fast);
-  flex: 1;
+  min-width: 44px;
 }
 .bn-item:active { background: var(--bg); }
 .bn-ico { position: relative; display: flex; align-items: center; justify-content: center; }
@@ -2358,6 +2357,27 @@ input[type="date"], input[type="number"] {
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon" id="logo-icon-wrap">
+      <svg width="34" height="34" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sb-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0A0618"/><stop offset="100%" stop-color="#120D30"/></linearGradient>
+          <linearGradient id="sb-sl" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#818CF8"/><stop offset="100%" stop-color="#2DD4BF"/></linearGradient>
+          <clipPath id="sb-clip"><rect width="110" height="110" rx="26"/></clipPath>
+        </defs>
+        <rect id="icon-bg" width="110" height="110" rx="26" fill="url(#sb-bg)"/>
+        <g transform="rotate(-8 55 55)">
+          <rect x="24" y="18" width="13" height="72" rx="5" fill="rgba(255,255,255,0.9)"/>
+          <rect x="24" y="18" width="52" height="13" rx="5" fill="rgba(255,255,255,0.9)"/>
+          <rect x="24" y="46" width="36" height="12" rx="5" fill="rgba(255,255,255,0.9)"/>
+        </g>
+        <rect x="52" y="-8" width="14" height="130" rx="7" fill="url(#sb-sl)" transform="rotate(30 55 55)" clip-path="url(#sb-clip)" opacity="0.95"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-sub" style="font-size:11px;letter-spacing:0.06em">Track. Manage. Grow.</div>
+    </div>
+  </div>
   <div class="sidebar-divider"></div>
   <nav class="nav">
     <div class="nav-section">Overview</div>
@@ -3389,11 +3409,11 @@ function goPanel(name){
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   var btn=document.querySelector('.nav-btn[data-panel="'+name+'"]');if(btn)btn.classList.add('active');
   st('topbar-title',TITLES[name]||name);
-  // Always show topbar on all panels
+  // Hide topbar on all panels except dashboard
   var tb=document.querySelector('.topbar');
-  if(tb){tb.classList.remove('tb-hidden');}
+  if(tb){tb.classList.toggle('tb-hidden',name!=='dashboard');}
   var cont2=document.querySelector('.content');
-  if(cont2){cont2.classList.remove('no-topbar');}
+  if(cont2){cont2.classList.toggle('no-topbar',name!=='dashboard');}
   // Reset scroll state when switching panels
   var bn=ge('bottom-nav');if(bn)bn.classList.remove('scrolled');
   var cont=document.querySelector('.content');if(cont)cont.scrollTop=0;
@@ -3501,22 +3521,8 @@ ge('go-charts').addEventListener('click',function(){goPanel('charts');});
 
 // ── SIDEBAR ──────────────────────────────────────────────
 var _sideOpen=false;
-function openSidebar(){
-  _sideOpen=true;
-  ge('sidebar').classList.add('open');
-  ge('ham-btn').classList.add('open');
-  ge('sidebar-overlay').classList.add('show');
-  var bn=ge('bottom-nav');
-  if(bn){bn.style.opacity='0';bn.style.pointerEvents='none';bn.style.transform='translateY(100%)';}
-}
-function closeSidebar(){
-  _sideOpen=false;
-  ge('sidebar').classList.remove('open');
-  ge('ham-btn').classList.remove('open');
-  ge('sidebar-overlay').classList.remove('show');
-  var bn=ge('bottom-nav');
-  if(bn){bn.style.opacity='';bn.style.pointerEvents='';bn.style.transform='';}
-}
+function openSidebar(){_sideOpen=true;ge('sidebar').classList.add('open');ge('ham-btn').classList.add('open');ge('sidebar-overlay').classList.add('show');}
+function closeSidebar(){_sideOpen=false;ge('sidebar').classList.remove('open');ge('ham-btn').classList.remove('open');ge('sidebar-overlay').classList.remove('show');}
 ge('ham-btn').addEventListener('click',function(){_sideOpen?closeSidebar():openSidebar();});
 
 // ── SCROLL-HIDE BOTTOM NAV ──────────────────────────────
