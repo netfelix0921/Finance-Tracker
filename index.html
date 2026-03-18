@@ -115,6 +115,7 @@ html, body {
   font-size: 13px;
   line-height: 1.5;
   font-weight: 400;
+  overflow-x: hidden;
 }
 
 /* ── iOS PWA TOUCH FIX ── */
@@ -133,7 +134,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
 /* ═══════════════════════════════════════════════════════════════
    APP SHELL
    ═══════════════════════════════════════════════════════════════ */
-.app { display: flex; height: 100vh; overflow: hidden; background: var(--bg); }
+.app { display: flex; height: 100vh; overflow: hidden; background: var(--bg); max-width: 100vw; }
 
 /* ═══════════════════════════════════════════════════════════════
    SIDEBAR
@@ -499,7 +500,7 @@ button,.nav-btn,.pchip,.df-btn,.bft,.cr-btn,.tb-btn,.tb-chip,.wlink,.modal-close
   transition: padding-top 0.3s var(--ease);
 }
 .content.no-topbar {
-  padding-top: calc(env(safe-area-inset-top) + 16px);
+  padding-top: calc(46px + env(safe-area-inset-top) + 14px) !important;
 }
 .panel { display: none; }
 .panel.active {
@@ -1442,9 +1443,9 @@ html[data-theme="dark"] {
   --border:     rgba(255,255,255,0.07);
   --border2:    rgba(255,255,255,0.11);
   --t1:  #EEF2FF;
-  --t2:  #8B95B0;
-  --t3:  #4B5268;
-  --t4:  #2D3148;
+  --t2:  #B0B9D0;
+  --t3:  #7A849E;
+  --t4:  #3D4460;
   --sh-xs:  0 1px 2px rgba(0,0,0,0.30);
   --sh-sm:  0 2px 4px rgba(0,0,0,0.40), 0 1px 2px rgba(0,0,0,0.28);
   --sh-md:  0 4px 12px rgba(0,0,0,0.50), 0 2px 4px rgba(0,0,0,0.30);
@@ -1640,10 +1641,14 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 .bn-lbl {
   font-size: 9px; font-weight: 500; color: var(--t3);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  transition: color var(--dur-fast); white-space: nowrap;
+  transition: color var(--dur-fast), opacity var(--dur-fast), max-height var(--dur-fast);
+  white-space: nowrap;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
 }
 .bn-item.active .bn-ico svg { stroke: var(--blue); }
-.bn-item.active .bn-lbl { color: var(--blue); font-weight: 600; }
+.bn-item.active .bn-lbl { color: var(--blue); font-weight: 600; opacity: 1; max-height: 20px; }
 .bn-item.active .bn-active-dot { display: block; }
 .bn-active-dot {
   display: none; width: 4px; height: 4px;
@@ -1849,14 +1854,14 @@ html[data-theme="dark"] .bn-sheet-btn { background: var(--bg); border-color: var
 
 /* ⑥ Goals card */
 .d-goals-card { border-radius:16px !important;overflow:hidden; }
-.d-goal-item  { padding:10px 16px;border-bottom:none; }
+.d-goal-item  { padding:7px 14px;border-bottom:none; }
 
-.d-goal-head  { display:flex;align-items:center;gap:9px;margin-bottom:7px; }
-.d-goal-ico   { width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0; }
-.d-goal-name  { font-size:12.5px;font-weight:600;color:var(--t1); }
-.d-goal-sub   { font-size:10px;color:var(--t3);margin-top:1px; }
-.d-goal-pct   { margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;flex-shrink:0; }
-.d-goal-prog-bg   { height:5px;background:var(--bg-2);border-radius:999px;overflow:hidden; }
+.d-goal-head  { display:flex;align-items:center;gap:8px;margin-bottom:5px; }
+.d-goal-ico   { width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0; }
+.d-goal-name  { font-size:12px;font-weight:600;color:var(--t1); }
+.d-goal-sub   { font-size:9.5px;color:var(--t3);margin-top:1px; }
+.d-goal-pct   { margin-left:auto;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:999px;flex-shrink:0; }
+.d-goal-prog-bg   { height:4px;background:var(--bg-2);border-radius:999px;overflow:hidden; }
 .d-goal-prog-fill { height:100%;border-radius:999px;transition:width 1s cubic-bezier(.16,1,.3,1); }
 
 /* ⑦ Bills / Transactions row */
@@ -2212,12 +2217,14 @@ input[type="date"], input[type="number"] {
   -webkit-overflow-scrolling: touch !important;
   flex: 1 !important;
   max-width: 100% !important;
+  overflow-x: hidden !important;
 }
 @media(min-width:901px) {
   .content {
     padding: 24px 28px !important;
     padding-top: calc(46px + env(safe-area-inset-top) + 24px) !important;
     padding-bottom: 24px !important;
+    overflow-x: hidden !important;
   }
 }
 
@@ -2331,7 +2338,7 @@ input[type="date"], input[type="number"] {
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
+  <div class="sidebar-logo" style="display:none">
     <div class="logo-icon" id="logo-icon-wrap">
       <svg width="34" height="34" viewBox="0 0 110 110" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -3383,11 +3390,11 @@ function goPanel(name){
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   var btn=document.querySelector('.nav-btn[data-panel="'+name+'"]');if(btn)btn.classList.add('active');
   st('topbar-title',TITLES[name]||name);
-  // Hide topbar on all panels except dashboard
+  // Header always visible on all panels
   var tb=document.querySelector('.topbar');
-  if(tb){tb.classList.toggle('tb-hidden',name!=='dashboard');}
+  if(tb){tb.classList.remove('tb-hidden');}
   var cont2=document.querySelector('.content');
-  if(cont2){cont2.classList.toggle('no-topbar',name!=='dashboard');}
+  if(cont2){cont2.classList.remove('no-topbar');}
   // Reset scroll state when switching panels
   var bn=ge('bottom-nav');if(bn)bn.classList.remove('scrolled');
   var cont=document.querySelector('.content');if(cont)cont.scrollTop=0;
