@@ -1649,8 +1649,9 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   z-index: 150;
-  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-  box-sizing: content-box;
+  padding: 6px 0;
+  padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
   flex-shrink: 0;
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
@@ -1660,7 +1661,7 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
   align-items: center;
   justify-items: center;
   width: 100%;
-  height: 52px;
+  height: 50px;
 }
 .bn-item {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -7844,55 +7845,5 @@ if ('serviceWorker' in navigator) {
     <button class="ob-next" id="ob-next">Next</button>
   </div>
 </div>
-<!-- DEBUG OVERLAY — remove after fixing -->
-<div id="ios-debug" style="
-  position: fixed;
-  top: 60px;
-  left: 10px;
-  right: 10px;
-  background: rgba(0,0,0,0.85);
-  color: #0f0;
-  font-family: monospace;
-  font-size: 11px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  z-index: 99999;
-  line-height: 1.8;
-  pointer-events: none;
-"></div>
-<script>
-(function(){
-  function update(){
-    var nav = document.getElementById('bottom-nav');
-    var el  = document.getElementById('ios-debug');
-    if(!el) return;
-
-    // Read CSS env values via a temp element
-    var probe = document.createElement('div');
-    probe.style.cssText = 'position:fixed;bottom:0;left:0;height:env(safe-area-inset-bottom,0px);width:1px;pointer-events:none;visibility:hidden;';
-    document.body.appendChild(probe);
-    var safeBot = probe.getBoundingClientRect().height;
-    document.body.removeChild(probe);
-
-    var navRect = nav ? nav.getBoundingClientRect() : null;
-
-    el.innerHTML =
-      'innerH: '      + window.innerHeight + '<br>' +
-      'docH: '        + document.documentElement.clientHeight + '<br>' +
-      'screenH: '     + screen.height + '<br>' +
-      'safeBot(px): ' + safeBot.toFixed(1) + '<br>' +
-      (navRect ?
-        'nav.top: '    + navRect.top.toFixed(1) + '<br>' +
-        'nav.bottom: ' + navRect.bottom.toFixed(1) + '<br>' +
-        'nav.height: ' + navRect.height.toFixed(1) + '<br>' +
-        'gap below: '  + (window.innerHeight - navRect.bottom).toFixed(1)
-      : 'nav: NOT FOUND');
-  }
-  update();
-  window.addEventListener('resize', update);
-  setTimeout(update, 500);
-  setTimeout(update, 1500);
-})();
-</script>
 </body>
 </html>
