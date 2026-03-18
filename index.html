@@ -1467,10 +1467,10 @@ html[data-theme="dark"] {
   --surface-dim: rgba(19,23,32,0.85);
   --border:     rgba(255,255,255,0.07);
   --border2:    rgba(255,255,255,0.11);
-  --t1:  #F0F4FF;
-  --t2:  #C2CBDF;
-  --t3:  #8E9AB8;
-  --t4:  #545F7A;
+  --t1:  #EEF2FF;
+  --t2:  #8B95B0;
+  --t3:  #4B5268;
+  --t4:  #2D3148;
   --sh-xs:  0 1px 2px rgba(0,0,0,0.30);
   --sh-sm:  0 2px 4px rgba(0,0,0,0.40), 0 1px 2px rgba(0,0,0,0.28);
   --sh-md:  0 4px 12px rgba(0,0,0,0.50), 0 2px 4px rgba(0,0,0,0.30);
@@ -1744,8 +1744,6 @@ html[data-theme="dark"] .twrap::-webkit-scrollbar-thumb { background: rgba(255,2
 /* On mobile: show bottom nav, hide sidebar, remove topbar ham */
 @media (max-width: 900px) {
   .bottom-nav { display: flex; flex-direction: column; }
-  /* Extra bottom padding so content clears the fixed bottom nav */
-  .content { padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important; }
 }
 /* Transparent bottom nav on scroll — only plus stays ──────── */
 .bottom-nav {
@@ -1927,8 +1925,8 @@ html[data-theme="dark"] .bn-sheet-btn { background: var(--bg); border-color: var
    ══════════════════════════════════════════════════════════════ */
 
 /* ── 1. SCROLL FIX: content never hidden behind bottom nav ── */
-.content {
-  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+@media(max-width:900px) {
+  .content { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
 }
 @media(min-width:901px) {
   /* desktop: no bottom nav */
@@ -2171,7 +2169,6 @@ input[type="date"], input[type="number"] {
 /* Content padding — same tight value everywhere */
 .content {
   padding: 16px !important;
-  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
 }
 @media(min-width:901px) {
   .content { padding: 20px !important; padding-bottom: 20px !important; }
@@ -2233,11 +2230,16 @@ input[type="date"], input[type="number"] {
 .content {
   padding: 16px !important;
   padding-top: calc(46px + env(safe-area-inset-top) + 14px) !important;
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: 24px !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
   flex: 1 !important;
   max-width: 100% !important;
+}
+@media(max-width:900px) {
+  .content {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
 }
 @media(min-width:901px) {
   .content {
