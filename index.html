@@ -7839,7 +7839,19 @@ document.addEventListener('keydown',function(e){
 })();
 
 
-
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(function (registration) {
+          console.log('Service Worker registered:', registration.scope);
+        })
+        .catch(function (error) {
+          console.log('Service Worker registration failed:', error);
+        });
+    });
+  }
+</script>
 
 </script>
 <div id="onboard-ov" class="ob-overlay" style="display:none">
