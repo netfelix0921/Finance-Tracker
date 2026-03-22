@@ -7,7 +7,7 @@
      'unsafe-inline' on style-src is required for the inline <style> block and
      dynamically injected style attributes used throughout the app. -->
 <meta http-equiv="Content-Security-Policy"
-  content="default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://ssl.google-analytics.com; img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://region1.analytics.google.com https://www.googletagmanager.com https://stats.g.doubleclick.net;">
+  content="default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,47 +25,6 @@
 <!-- FIX: Consolidated 3 @import rules into a single non-blocking <link> tag.
      @import inside <style> is render-blocking; <link rel="stylesheet"> is not. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap">
-<!-- ── GOOGLE ANALYTICS 4 ──────────────────────────────────────────
-     Tracks: page views, active users, countries, devices, and PWA installs.
-     Replace G-3LZ1RY1RRQ with your actual GA4 Measurement ID from:
-     analytics.google.com → Admin → Data Streams → your stream → Measurement ID
-     ──────────────────────────────────────────────────────────────── -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-3LZ1RY1RRQ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-3LZ1RY1RRQ', {
-    app_name: 'Fintra',
-    app_version: '1.0-beta',
-    // Don't send IP addresses — privacy-friendly
-    anonymize_ip: true
-  });
-
-  // Track PWA install prompt (Android Chrome "Add to Home Screen")
-  window.addEventListener('beforeinstallprompt', function(e) {
-    gtag('event', 'pwa_install_prompt', {
-      event_category: 'PWA',
-      event_label: 'Install prompt shown'
-    });
-  });
-
-  // Track when user actually installs the PWA
-  window.addEventListener('appinstalled', function() {
-    gtag('event', 'pwa_installed', {
-      event_category: 'PWA',
-      event_label: 'App installed to home screen'
-    });
-  });
-
-  // Track if already running as installed PWA (standalone mode)
-  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-    gtag('event', 'pwa_launched', {
-      event_category: 'PWA',
-      event_label: 'Opened from home screen'
-    });
-  }
-</script>
 <title>Fintra — Your Financial Control Center</title>
 <style>
 /* ═══════════════════════════════════════════════════════════════
@@ -3227,13 +3186,13 @@ input[type="date"], input[type="number"] {
         </div>
         <div class="prof-field" style="border-bottom:none">
           <label class="prof-label">Currency</label>
-          <select id="pf-cur" style="max-width:160px">
-            <option value="₱">₱ PHP</option>
-            <option value="$">$ USD</option>
-            <option value="€">€ EUR</option>
-            <option value="£">£ GBP</option>
-            <option value="¥">¥ JPY</option>
-          </select>
+          <div style="position:relative;max-width:220px">
+            <input type="text" id="pf-cur-search" placeholder="Search currency…" autocomplete="off"
+              style="width:100%;padding:6px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);font-size:12.5px;background:var(--bg);color:var(--t1);outline:none;cursor:text"
+              oninput="filterCurrencyList(this.value)" onfocus="showCurrencyDropdown()" onblur="setTimeout(hideCurrencyDropdown,200)">
+            <div id="pf-cur-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:9999;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);box-shadow:var(--sh-lg);max-height:220px;overflow-y:auto"></div>
+            <input type="hidden" id="pf-cur">
+          </div>
         </div>
         <button class="btn-add" id="btn-save-profile" style="margin-top:12px">Save changes</button>
       </div>
@@ -3458,7 +3417,7 @@ input[type="date"], input[type="number"] {
 var STORAGE_KEY='fintra_state_v6';
 var STORAGE_VERSION=6;
 var SK=STORAGE_KEY; // alias kept for compatibility with all existing SK references
-function defaultState(){return{accounts:[],income:[],expense:[],transfer:[],credit:[],savings:[],subscriptions:[],goals:[],installments:[],bills:[],savingsGoals:[],dismissedAlerts:[],nwSnapshots:{},balHistory:{},profile:{name:'',tagline:'',currency:'₱',photo:''},nextId:1};}
+function defaultState(){return{accounts:[],income:[],expense:[],transfer:[],credit:[],savings:[],subscriptions:[],goals:[],installments:[],bills:[],savingsGoals:[],dismissedAlerts:[],nwSnapshots:{},balHistory:{},profile:{name:'',tagline:'',currency:'PHP',photo:''},nextId:1};}
 function loadState(){
   try{
     var r=localStorage.getItem(SK);
@@ -3529,13 +3488,227 @@ function sv(id,v){var el=ge(id);if(el)el.value=v;}
 function st(id,v){var el=ge(id);if(el)el.textContent=v;}
 function today(){return new Date().toISOString().split('T')[0];}
 function curYM(){return today().slice(0,7);}
-function cur(){return S.profile.currency||'₱';}
+// cur() defined below alongside curData
 // FIX 8e: derive the number-format locale from the user's chosen currency
 // so that decimal/thousands separators match the currency convention.
 // Previously en-PH was hardcoded even when the user switched to € or $.
-var CURRENCY_LOCALE_MAP={'₱':'en-PH','$':'en-US','€':'de-DE','£':'en-GB','¥':'ja-JP','₩':'ko-KR','₹':'en-IN','A$':'en-AU','C$':'en-CA','S$':'en-SG'};
-function fmtLocale(){return CURRENCY_LOCALE_MAP[cur()]||'en-US';}
-function fmt(n){return cur()+Number(n).toLocaleString(fmtLocale(),{minimumFractionDigits:2,maximumFractionDigits:2});}
+var WORLD_CURRENCIES=[
+  ['؋','AFN','Afghan Afghani','Afghanistan','fa-AF',0,false],
+  ['L','ALL','Albanian Lek','Albania','sq-AL',2,true],
+  ['دج','DZD','Algerian Dinar','Algeria','ar-DZ',2,false],
+  ['$','ARS','Argentine Peso','Argentina','es-AR',2,false],
+  ['֏','AMD','Armenian Dram','Armenia','hy-AM',0,false],
+  ['A$','AUD','Australian Dollar','Australia','en-AU',2,false],
+  ['₼','AZN','Azerbaijani Manat','Azerbaijan','az-AZ',2,false],
+  ['$','BSD','Bahamian Dollar','Bahamas','en-BS',2,false],
+  ['.د.ب','BHD','Bahraini Dinar','Bahrain','ar-BH',3,false],
+  ['৳','BDT','Bangladeshi Taka','Bangladesh','bn-BD',2,false],
+  ['$','BBD','Barbadian Dollar','Barbados','en-BB',2,false],
+  ['Br','BYN','Belarusian Ruble','Belarus','be-BY',2,false],
+  ['€','EUR','Euro','Belgium','de-DE',2,false],
+  ['BZ$','BZD','Belize Dollar','Belize','en-BZ',2,false],
+  ['CFA','XOF','West African CFA Franc','Benin','fr-SN',0,false],
+  ['Nu.','BTN','Bhutanese Ngultrum','Bhutan','dz-BT',2,false],
+  ['Bs.','BOB','Bolivian Boliviano','Bolivia','es-BO',2,false],
+  ['KM','BAM','Bosnia Convertible Mark','Bosnia','bs-BA',2,true],
+  ['P','BWP','Botswana Pula','Botswana','en-BW',2,false],
+  ['R$','BRL','Brazilian Real','Brazil','pt-BR',2,false],
+  ['£','GBP','British Pound','United Kingdom','en-GB',2,false],
+  ['$','BND','Brunei Dollar','Brunei','ms-BN',2,false],
+  ['лв','BGN','Bulgarian Lev','Bulgaria','bg-BG',2,true],
+  ['CFA','XOF','West African CFA Franc','Burkina Faso','fr-SN',0,false],
+  ['FBu','BIF','Burundian Franc','Burundi','fr-BI',0,false],
+  ['៛','KHR','Cambodian Riel','Cambodia','km-KH',0,false],
+  ['CFA','XAF','Central African CFA Franc','Cameroon','fr-CM',0,false],
+  ['C$','CAD','Canadian Dollar','Canada','en-CA',2,false],
+  ['$','CLP','Chilean Peso','Chile','es-CL',0,false],
+  ['¥','CNY','Chinese Yuan','China','zh-CN',2,false],
+  ['$','COP','Colombian Peso','Colombia','es-CO',2,false],
+  ['₡','CRC','Costa Rican Colón','Costa Rica','es-CR',2,false],
+  ['kn','HRK','Croatian Kuna','Croatia','hr-HR',2,true],
+  ['₱','PHP','Philippine Peso','Philippines','en-PH',2,false],
+  ['Kč','CZK','Czech Koruna','Czech Republic','cs-CZ',2,true],
+  ['kr','DKK','Danish Krone','Denmark','da-DK',2,true],
+  ['$','DOP','Dominican Peso','Dominican Republic','es-DO',2,false],
+  ['$','USD','US Dollar','Ecuador','en-US',2,false],
+  ['£','EGP','Egyptian Pound','Egypt','ar-EG',2,false],
+  ['€','EUR','Euro','Finland','de-DE',2,false],
+  ['€','EUR','Euro','France','de-DE',2,false],
+  ['GEL','GEL','Georgian Lari','Georgia','ka-GE',2,false],
+  ['€','EUR','Euro','Germany','de-DE',2,false],
+  ['₵','GHS','Ghanaian Cedi','Ghana','en-GH',2,false],
+  ['€','EUR','Euro','Greece','de-DE',2,false],
+  ['Q','GTQ','Guatemalan Quetzal','Guatemala','es-GT',2,false],
+  ['FG','GNF','Guinean Franc','Guinea','fr-GN',0,false],
+  ['$','GYD','Guyanese Dollar','Guyana','en-GY',2,false],
+  ['G','HTG','Haitian Gourde','Haiti','fr-HT',2,false],
+  ['L','HNL','Honduran Lempira','Honduras','es-HN',2,false],
+  ['Ft','HUF','Hungarian Forint','Hungary','hu-HU',0,true],
+  ['kr','ISK','Icelandic Krona','Iceland','is-IS',0,true],
+  ['₹','INR','Indian Rupee','India','en-IN',2,false],
+  ['Rp','IDR','Indonesian Rupiah','Indonesia','id-ID',0,false],
+  ['﷼','IRR','Iranian Rial','Iran','fa-IR',0,false],
+  ['ع.د','IQD','Iraqi Dinar','Iraq','ar-IQ',3,false],
+  ['€','EUR','Euro','Ireland','de-DE',2,false],
+  ['₪','ILS','Israeli Shekel','Israel','he-IL',2,false],
+  ['€','EUR','Euro','Italy','de-DE',2,false],
+  ['¥','JPY','Japanese Yen','Japan','ja-JP',0,false],
+  ['د.ا','JOD','Jordanian Dinar','Jordan','ar-JO',3,false],
+  ['₸','KZT','Kazakhstani Tenge','Kazakhstan','kk-KZ',2,false],
+  ['Sh','KES','Kenyan Shilling','Kenya','sw-KE',2,false],
+  ['₩','KRW','South Korean Won','South Korea','ko-KR',0,false],
+  ['د.ك','KWD','Kuwaiti Dinar','Kuwait','ar-KW',3,false],
+  ['₭','LAK','Lao Kip','Laos','lo-LA',0,false],
+  ['€','EUR','Euro','Latvia','de-DE',2,false],
+  ['ل.ل','LBP','Lebanese Pound','Lebanon','ar-LB',0,false],
+  ['L','LSL','Lesotho Loti','Lesotho','st-LS',2,false],
+  ['$','LRD','Liberian Dollar','Liberia','en-LR',2,false],
+  ['د.ل','LYD','Libyan Dinar','Libya','ar-LY',3,false],
+  ['CHF','CHF','Swiss Franc','Liechtenstein','de-CH',2,false],
+  ['€','EUR','Euro','Lithuania','de-DE',2,false],
+  ['€','EUR','Euro','Luxembourg','de-DE',2,false],
+  ['ден','MKD','Macedonian Denar','North Macedonia','mk-MK',2,true],
+  ['Ar','MGA','Malagasy Ariary','Madagascar','mg-MG',0,false],
+  ['MK','MWK','Malawian Kwacha','Malawi','en-MW',2,false],
+  ['RM','MYR','Malaysian Ringgit','Malaysia','ms-MY',2,false],
+  ['Rf','MVR','Maldivian Rufiyaa','Maldives','dv-MV',2,false],
+  ['CFA','XOF','West African CFA Franc','Mali','fr-SN',0,false],
+  ['€','EUR','Euro','Malta','de-DE',2,false],
+  ['OMR','OMR','Omani Rial','Oman','ar-OM',3,false],
+  ['$','MXN','Mexican Peso','Mexico','es-MX',2,false],
+  ['₮','MNT','Mongolian Tugrik','Mongolia','mn-MN',0,false],
+  ['د.م','MAD','Moroccan Dirham','Morocco','ar-MA',2,false],
+  ['MT','MZN','Mozambican Metical','Mozambique','pt-MZ',2,false],
+  ['Ks','MMK','Myanmar Kyat','Myanmar','my-MM',0,false],
+  ['$','NAD','Namibian Dollar','Namibia','en-NA',2,false],
+  ['₨','NPR','Nepalese Rupee','Nepal','ne-NP',2,false],
+  ['€','EUR','Euro','Netherlands','de-DE',2,false],
+  ['NZ$','NZD','New Zealand Dollar','New Zealand','en-NZ',2,false],
+  ['₦','NGN','Nigerian Naira','Nigeria','en-NG',2,false],
+  ['kr','NOK','Norwegian Krone','Norway','nb-NO',2,true],
+  ['₨','PKR','Pakistani Rupee','Pakistan','ur-PK',2,false],
+  ['B/.','PAB','Balboa','Panama','es-PA',2,false],
+  ['₲','PYG','Paraguayan Guarani','Paraguay','es-PY',0,false],
+  ['S/','PEN','Peruvian Sol','Peru','es-PE',2,false],
+  ['zł','PLN','Polish Zloty','Poland','pl-PL',2,true],
+  ['€','EUR','Euro','Portugal','de-DE',2,false],
+  ['﷼','QAR','Qatari Riyal','Qatar','ar-QA',2,false],
+  ['lei','RON','Romanian Leu','Romania','ro-RO',2,true],
+  ['₽','RUB','Russian Ruble','Russia','ru-RU',2,false],
+  ['FRw','RWF','Rwandan Franc','Rwanda','rw-RW',0,false],
+  ['﷼','SAR','Saudi Riyal','Saudi Arabia','ar-SA',2,false],
+  ['د.ص','SOS','Somali Shilling','Somalia','so-SO',0,false],
+  ['R','ZAR','South African Rand','South Africa','en-ZA',2,false],
+  ['€','EUR','Euro','Spain','de-DE',2,false],
+  ['Rs','LKR','Sri Lankan Rupee','Sri Lanka','si-LK',2,false],
+  ['kr','SEK','Swedish Krona','Sweden','sv-SE',2,true],
+  ['CHF','CHF','Swiss Franc','Switzerland','de-CH',2,false],
+  ['NT$','TWD','New Taiwan Dollar','Taiwan','zh-TW',2,false],
+  ['TSh','TZS','Tanzanian Shilling','Tanzania','sw-TZ',0,false],
+  ['฿','THB','Thai Baht','Thailand','th-TH',2,false],
+  ['T$','TOP','Tongan Paʻanga','Tonga','to-TO',2,false],
+  ['₺','TRY','Turkish Lira','Turkey','tr-TR',2,false],
+  ['₴','UAH','Ukrainian Hryvnia','Ukraine','uk-UA',2,false],
+  ['د.إ','AED','UAE Dirham','UAE','ar-AE',2,false],
+  ['$','USD','US Dollar','USA','en-US',2,false],
+  ['$','UYU','Uruguayan Peso','Uruguay','es-UY',2,false],
+  ['soʻm','UZS','Uzbekistani Som','Uzbekistan','uz-UZ',0,false],
+  ['₫','VND','Vietnamese Dong','Vietnam','vi-VN',0,false],
+  ['﷼','YER','Yemeni Rial','Yemen','ar-YE',0,false],
+  ['ZK','ZMW','Zambian Kwacha','Zambia','en-ZM',2,false]
+];
+// Build lookup maps
+var CURRENCY_MAP={};  // keyed by symbol (first match wins for display)
+var CURRENCY_ISO_MAP={};  // keyed by ISO code (authoritative)
+WORLD_CURRENCIES.forEach(function(c){
+  CURRENCY_ISO_MAP[c[1]]=c;
+  if(!CURRENCY_MAP[c[0]])CURRENCY_MAP[c[0]]=c;
+});
+
+function curData(){
+  // Look up by ISO code first (stored in profile), then by symbol
+  var stored=S.profile.currency||'PHP';
+  // If stored value looks like an ISO code (3 uppercase letters), use ISO map
+  var c=(/^[A-Z]{2,4}$/.test(stored))?CURRENCY_ISO_MAP[stored]:null;
+  // Fall back to symbol map, then default
+  if(!c)c=CURRENCY_MAP[stored];
+  if(!c)c=CURRENCY_ISO_MAP['USD'];
+  return c||['$','USD','US Dollar','USA','en-US',2,false];
+}
+// Array structure: [symbol(0), isoCode(1), name(2), country(3), locale(4), decimals(5), symbolAfter(6)]
+function cur(){return curData()[0]||'$';} // returns symbol; profile stores ISO code
+function fmtLocale(){return curData()[4]||'en-US';}
+function fmtDecimals(){var d=curData()[5];return d!==undefined?d:2;}
+function fmtSymbolAfter(){return curData()[6]||false;}
+function fmt(n){
+  var c=curData();
+  var sym=c[0];
+  var decimals=c[5]!==undefined?c[5]:2;
+  var locale=c[4]||'en-US';
+  var formatted=Number(n).toLocaleString(locale,{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+  return c[6]?formatted+' '+sym:sym+formatted;
+}
+
+// ── CURRENCY DROPDOWN UI ─────────────────────────────────────────
+function _buildCurrencyItem(c,isSel){
+  // c: [symbol, isoCode, name, country, locale, decimals, symbolAfter]
+  var iso=c[1];
+  return '<div class="cur-item" style="padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:12.5px;border-bottom:1px solid var(--border);background:'+(isSel?'var(--blue-s)':'')+'"'
+    +' onmousedown="selectCurrency(\''+iso+'\')" onmouseover="this.style.background=\'var(--blue-s)\'" onmouseout="this.style.background=\''+( isSel?'var(--blue-s)':'')+'\'">'
+    +'<span style="font-family:DM Mono,monospace;font-weight:500;color:var(--blue);min-width:40px;flex-shrink:0">'+c[0]+'</span>'
+    +'<span style="color:var(--t1);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c[2]+'</span>'
+    +'<span style="color:var(--t3);font-size:11px;margin-left:6px;flex-shrink:0">'+iso+'</span>'
+    +'</div>';
+}
+function showCurrencyDropdown(){
+  var dd=document.getElementById('pf-cur-dropdown');
+  var srch=document.getElementById('pf-cur-search');
+  if(!dd||!srch)return;
+  filterCurrencyList(srch.value||'');
+  dd.style.display='block';
+}
+function hideCurrencyDropdown(){
+  var dd=document.getElementById('pf-cur-dropdown');
+  if(dd)dd.style.display='none';
+}
+function filterCurrencyList(q){
+  var dd=document.getElementById('pf-cur-dropdown');
+  if(!dd)return;
+  var lq=(q||'').toLowerCase();
+  var stored=S.profile.currency||'PHP';
+  var filtered=WORLD_CURRENCIES.filter(function(c){
+    if(!lq)return true;
+    return c[0].toLowerCase().includes(lq)
+      ||c[1].toLowerCase().includes(lq)
+      ||c[2].toLowerCase().includes(lq)
+      ||c[3].toLowerCase().includes(lq);
+  }).slice(0,100);
+  if(!filtered.length){dd.innerHTML='<div style="padding:10px 12px;color:var(--t3);font-size:12px">No currencies found</div>';return;}
+  dd.innerHTML=filtered.map(function(c){return _buildCurrencyItem(c,c[1]===stored);}).join('');
+}
+function selectCurrency(isoCode){
+  var c=CURRENCY_ISO_MAP[isoCode];
+  if(!c)return;
+  var hiddenInput=document.getElementById('pf-cur');
+  var searchInput=document.getElementById('pf-cur-search');
+  if(hiddenInput)hiddenInput.value=isoCode; // store ISO code
+  if(searchInput)searchInput.value=c[0]+' — '+c[2]+' ('+c[3]+') · '+isoCode;
+  hideCurrencyDropdown();
+}
+// Populate search display when profile loads
+function initCurrencyInput(){
+  var stored=S.profile.currency||'PHP';
+  // Migrate old symbol-based value to ISO code
+  if(stored&&!(/^[A-Z]{2,4}$/.test(stored))){
+    var found=WORLD_CURRENCIES.find(function(x){return x[0]===stored;});
+    if(found)stored=found[1];
+  }
+  var c=CURRENCY_ISO_MAP[stored]||CURRENCY_ISO_MAP['PHP'];
+  var hiddenInput=document.getElementById('pf-cur');
+  var searchInput=document.getElementById('pf-cur-search');
+  if(hiddenInput)hiddenInput.value=stored;
+  if(searchInput&&c)searchInput.value=c[0]+' — '+c[2]+' ('+c[3]+') · '+stored;
+}
 function nxtId(){return S.nextId++;}
 function toast(msg,type){var t=ge('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');setTimeout(function(){t.className='toast';},2800);}
 
@@ -5277,7 +5450,7 @@ function updateProfileStats(){
 }
 function renderProfile(){
   var p=S.profile;
-  sv('pf-name',p.name||'');sv('pf-tag',p.tagline||'');sv('pf-cur',p.currency||'₱');
+  sv('pf-name',p.name||'');sv('pf-tag',p.tagline||'');sv('pf-cur',p.currency||'₱');setTimeout(initCurrencyInput,0);
   st('prof-name-disp',p.name||'Your Name');st('prof-tag-disp',p.tagline||'Your Financial Control Center');
   st('prof-initial',(p.name||'Y').charAt(0).toUpperCase());
   // Populate app status date
@@ -5290,7 +5463,14 @@ function renderProfile(){
 }
 ge('btn-save-profile').addEventListener('click',function(){
   var name=gv('pf-name').trim();
-  S.profile.name=name;S.profile.tagline=gv('pf-tag').trim();S.profile.currency=gv('pf-cur');
+  S.profile.name=name;S.profile.tagline=gv('pf-tag').trim();
+  var rawCur=gv('pf-cur').trim();
+  // Migrate old symbol to ISO code if needed
+  if(rawCur&&!(/^[A-Z]{2,4}$/.test(rawCur))){
+    var migrated=WORLD_CURRENCIES.find(function(x){return x[0]===rawCur;});
+    rawCur=migrated?migrated[1]:'PHP';
+  }
+  S.profile.currency=rawCur||'PHP';
   var displayName=name||'there';
   st('prof-name-disp',name||'Your Name');
   st('prof-tag-disp',S.profile.tagline||'Your Financial Control Center');
@@ -6043,7 +6223,7 @@ function exportCalendar(){
         dtstart:dtstart,
         dtend:dtend,
         summary:'💳 '+a.name+' Payment Due',
-        description:'Credit card billing due date for '+a.name+'.\nOutstanding balance: '+cur2+used.toLocaleString('en-PH',{minimumFractionDigits:2})+'\nCredit limit: '+cur2+(a.creditLimit||0).toLocaleString('en-PH',{minimumFractionDigits:2})+'\n\nManage in Fintra.',
+        description:'Credit card billing due date for '+a.name+'.\nOutstanding balance: '+fmt(used)+'\nCredit limit: '+fmt(a.creditLimit||0)+'\n\nManage in Fintra.',
         alarms:[1440, 4320] // 1 day before and 3 days before
       });
     }
@@ -6061,7 +6241,7 @@ function exportCalendar(){
       dtstart:dtstart,
       dtend:dtend,
       summary:'⚠️ Credit Due: '+e.desc+' ('+e.card+')',
-      description:'Unpaid credit charge due on '+e.due+'.\nAmount: '+cur2+e.amt.toLocaleString('en-PH',{minimumFractionDigits:2})+'\nCard: '+e.card+'\nCategory: '+e.category+(e.note?'\nNote: '+e.note:'')+'\n\nPay via Fintra.',
+      description:'Unpaid credit charge due on '+e.due+'.\nAmount: '+fmt(e.amt)+'\nCard: '+e.card+'\nCategory: '+e.category+(e.note?'\nNote: '+e.note:'')+'\n\nPay via Fintra.',
       alarms:[480, 1440, 4320] // 8 hours, 1 day, 3 days before
     });
   });
